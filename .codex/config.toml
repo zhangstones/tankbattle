@@ -1,0 +1,16 @@
+﻿# Project-level Codex preferences
+
+[execution]
+# Prefer near-full automation: run commands directly and ask only when required
+# by platform permissions or destructive/high-risk actions.
+approval_policy = "on-failure"
+ask_for_confirmation = false
+auto_run_tests = true
+
+[safety]
+# Still require confirmation for destructive operations.
+confirm_destructive_actions = true
+
+[workflow]
+# Keep momentum with minimal interruption.
+prefer_non_interactive = true

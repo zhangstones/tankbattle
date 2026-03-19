@@ -3,7 +3,8 @@
 [execution]
 # Prefer near-full automation: run commands directly and ask only when required
 # by platform permissions or destructive/high-risk actions.
-approval_policy = "on-failure"
+approval_policy = "never"
+sandbox_mode = "workspace-write"
 ask_for_confirmation = false
 auto_run_tests = true
 

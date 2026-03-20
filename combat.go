@@ -90,7 +90,11 @@ func (g *game) fire(t *tank, fromPlayer bool) {
 	bx := t.x + tankSize/2 - bulletSize/2
 	by := t.y + tankSize/2 - bulletSize/2
 	vx, vy := 0.0, 0.0
-	switch t.dir {
+	fireDir := t.turret
+	if fireDir != up && fireDir != down && fireDir != left && fireDir != right {
+		fireDir = t.dir
+	}
+	switch fireDir {
 	case up:
 		vy = -speed
 		by = t.y - bulletSize

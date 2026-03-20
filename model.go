@@ -89,6 +89,7 @@ type tank struct {
 	x        float64
 	y        float64
 	dir      direction
+	turret   direction
 	speed    float64
 	cooldown int
 	turnLock int

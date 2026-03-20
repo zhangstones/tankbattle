@@ -88,6 +88,7 @@ func drawMenu(screen *ebiten.Image, g *game) {
 	ebitenutil.DebugPrintAt(screen, "TANK BATTLE // MISSION SETTINGS", 320, 140)
 	ebitenutil.DebugPrintAt(screen, "UP/DOWN select, LEFT/RIGHT modify, ENTER start", 250, 198)
 	ebitenutil.DebugPrintAt(screen, "Shortcuts: 1/2/3 difficulty, +/- enemy amount", 272, 218)
+	ebitenutil.DebugPrintAt(screen, "Combat: move WASD/Arrow, turret T/F/G/H, fire J/Space", 238, 238)
 
 	diffText := "Normal"
 	diffDesc := "Balanced speed and enemy fire rate."
@@ -127,7 +128,7 @@ func drawMenu(screen *ebiten.Image, g *game) {
 
 func drawHUD(screen *ebiten.Image, g *game) {
 	line1 := fmt.Sprintf("HP:%d   SCORE:%d   ENEMY:%d   WAVE:%d/%d", g.player.hp, g.score, len(g.enemies), g.wave, g.maxWave)
-	line2 := "Move WASD/Arrow  Fire J/Space  Pause P  Menu M"
+	line2 := "Move WASD/Arrow  Turret T/F/G/H  Fire J/Space"
 	line3 := fmt.Sprintf("BUFF  SHIELD:%2ds   RAPID:%2ds", g.shieldTick/60, g.rapidTick/60)
 
 	textW := maxInt(textWidth(line1), maxInt(textWidth(line2), textWidth(line3)))
@@ -295,7 +296,7 @@ func drawTank(screen *ebiten.Image, t tank, body, accent color.Color) {
 	drawCircle(screen, cx, cy, 6.2, accent)
 	drawCircle(screen, cx, cy, 2.2, color.RGBA{68, 72, 80, 255})
 
-	switch t.dir {
+	switch t.turret {
 	case up:
 		ebitenutil.DrawRect(screen, cx-2.5, t.y-11, 5, 16, barrel)
 		ebitenutil.DrawRect(screen, cx-4, t.y-13, 8, 3, color.RGBA{138, 144, 152, 255})

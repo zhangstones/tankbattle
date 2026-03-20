@@ -41,7 +41,7 @@ func (g *game) startMatch() {
 	g.rapidTick = 0
 	g.playerSilentFrames = 0
 
-	g.player = tank{x: screenW/2 - tankSize/2, y: screenH - 110, dir: up, speed: 3.2, hp: 5, isPlayer: true}
+	g.player = tank{x: screenW/2 - tankSize/2, y: screenH - 110, dir: up, turret: up, speed: 3.2, hp: 5, isPlayer: true}
 	g.bullets = g.bullets[:0]
 	g.explosions = g.explosions[:0]
 	g.powerups = g.powerups[:0]
@@ -152,6 +152,7 @@ func (g *game) spawnWave(wave int) {
 			x:      p.x,
 			y:      p.y,
 			dir:    p.dir,
+			turret: p.dir,
 			speed:  (1.55 + float64(wave)*0.2) * g.enemySpeedMultiplier(),
 			hp:     hp,
 			aiTick: rand.Intn(20) + 8,

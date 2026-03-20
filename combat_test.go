@@ -9,14 +9,29 @@ func TestFireCreatesBulletForPlayerAndEnemy(t *testing.T) {
 	g := newPlayingGameForTest()
 	g.bullets = nil
 	g.player.dir = up
+	g.player.turret = up
 	g.fire(&g.player, true)
 	if len(g.bullets) != 1 || !g.bullets[0].fromPlayer || g.bullets[0].vy >= 0 {
 		t.Fatalf("player bullet mismatch")
 	}
-	e := &tank{x: 100, y: 100, dir: left}
+	e := &tank{x: 100, y: 100, dir: left, turret: left}
 	g.fire(e, false)
 	if len(g.bullets) != 2 || g.bullets[1].fromPlayer || g.bullets[1].vx >= 0 {
 		t.Fatalf("enemy bullet mismatch")
+	}
+}
+
+func TestFireUsesTurretDirectionForStrafingShot(t *testing.T) {
+	g := newPlayingGameForTest()
+	g.bullets = nil
+	p := &tank{x: 160, y: 180, dir: right, turret: up}
+	g.fire(p, true)
+	if len(g.bullets) != 1 {
+		t.Fatalf("expected one bullet")
+	}
+	b := g.bullets[0]
+	if b.vx != 0 || b.vy >= 0 {
+		t.Fatalf("expected upward strafing shot, got vx=%v vy=%v", b.vx, b.vy)
 	}
 }
 
@@ -134,7 +149,8 @@ func TestEnemyFireIsAxisAligned(t *testing.T) {
 	g.bullets = nil
 	e := &tank{x: 120, y: 120}
 	for _, d := range []direction{up, down, left, right} {
-		e.dir = d
+		e.dir = up
+		e.turret = d
 		g.fire(e, false)
 		b := g.bullets[len(g.bullets)-1]
 		// Enemy bullets must stay axis-aligned (no diagonal components).

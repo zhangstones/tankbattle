@@ -29,6 +29,19 @@ func (g *game) updatePlayer() {
 		dx = g.player.speed
 		g.player.dir = right
 	}
+	// Turret can be aimed independently, enabling strafing shots while moving.
+	if ebiten.IsKeyPressed(ebiten.KeyT) {
+		g.player.turret = up
+	}
+	if ebiten.IsKeyPressed(ebiten.KeyG) {
+		g.player.turret = down
+	}
+	if ebiten.IsKeyPressed(ebiten.KeyF) {
+		g.player.turret = left
+	}
+	if ebiten.IsKeyPressed(ebiten.KeyH) {
+		g.player.turret = right
+	}
 	g.tryMoveTank(&g.player, dx, dy)
 
 	if (inpututil.IsKeyJustPressed(ebiten.KeyJ) || inpututil.IsKeyJustPressed(ebiten.KeySpace)) && g.player.cooldown == 0 {
@@ -78,8 +91,9 @@ func (g *game) updateEnemies() {
 				chance = fortressHitProb
 			}
 			if rand.Intn(100) < chance {
+				e.turret = e.dir
 				if rand.Intn(100) < fortressHitProb {
-					e.dir = g.directionTowardFortress(e)
+					e.turret = g.directionTowardFortress(e)
 				}
 				g.fire(e, false)
 				e.cooldown = enemyFireCooldown(alignedBase, alignedPlayer, e.aiRand)

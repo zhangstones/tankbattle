@@ -23,10 +23,18 @@ func TestUpdatePowerupsRapidPickup(t *testing.T) {
 func TestUpdatePowerupsRepairCapped(t *testing.T) {
 	g := newPlayingGameForTest()
 	g.fort.hp = g.fort.maxHP - 1
+	g.player.hp = g.player.maxHP - 1
+	g.player.turretHP = g.player.turretMaxHP - 1
 	g.powerups = []*powerup{{kind: powerRepair, box: rect{g.player.x, g.player.y, 16, 16}, life: 100}}
 	g.updatePowerups()
 	if g.fort.hp != g.fort.maxHP {
 		t.Fatalf("repair should cap at max hp")
+	}
+	if g.player.hp != g.player.maxHP {
+		t.Fatalf("repair should cap player hp at max")
+	}
+	if g.player.turretHP != g.player.turretMaxHP {
+		t.Fatalf("repair should cap player turret hp at max")
 	}
 }
 

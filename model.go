@@ -7,6 +7,9 @@ const (
 	tankSize   = 34.0
 	bulletSize = 6.0
 
+	playerHullMaxHP   = 5
+	playerTurretMaxHP = 6
+
 	menuItemCount = 3
 
 	enemyBaseMin = 2
@@ -96,6 +99,9 @@ type tank struct {
 	turret   direction
 	speed    float64
 	cooldown int
+	maxHP       int
+	turretHP    int
+	turretMaxHP int
 	turnLock int
 	turnWant direction
 	turnVote int

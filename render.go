@@ -128,19 +128,23 @@ func drawMenu(screen *ebiten.Image, g *game) {
 }
 
 func drawHUD(screen *ebiten.Image, g *game) {
-	line1 := fmt.Sprintf("HP:%d   SCORE:%d   ENEMY:%d   WAVE:%d/%d", g.player.hp, g.score, len(g.enemies), g.wave, g.maxWave)
+	line1 := fmt.Sprintf("SCORE:%d   ENEMY:%d   WAVE:%d/%d", g.score, len(g.enemies), g.wave, g.maxWave)
 	line2 := "Hold WASD/Arrow strafe  Double-tap WASD/Arrow turn  Fire J/Space"
 	line3 := fmt.Sprintf("BUFF  SHIELD:%2ds   RAPID:%2ds", g.shieldTick/60, g.rapidTick/60)
 
 	textW := maxInt(textWidth(line1), maxInt(textWidth(line2), textWidth(line3)))
-	panelW := clampInt(textW+56, 420, 620)
+	panelW := clampInt(textW+56, 460, 680)
 	badgeX := panelW - 96
 
-	ebitenutil.DrawRect(screen, 10, 10, float64(panelW), 96, color.RGBA{8, 16, 22, 220})
-	ebitenutil.DrawRect(screen, 14, 14, float64(panelW-8), 88, color.RGBA{40, 86, 96, 135})
+	ebitenutil.DrawRect(screen, 10, 10, float64(panelW), 132, color.RGBA{8, 16, 22, 220})
+	ebitenutil.DrawRect(screen, 14, 14, float64(panelW-8), 124, color.RGBA{40, 86, 96, 135})
 	ebitenutil.DebugPrintAt(screen, line1, 24, 22)
 	ebitenutil.DebugPrintAt(screen, line2, 24, 44)
 	ebitenutil.DebugPrintAt(screen, line3, 24, 66)
+	drawEnergyBar(screen, 24, 92, float64(panelW-150), 12, float64(g.player.hp)/float64(maxInt(g.player.maxHP, 1)), color.RGBA{88, 210, 128, 240}, "HULL")
+	drawEnergyBar(screen, 24, 112, float64(panelW-150), 12, float64(g.player.turretHP)/float64(maxInt(g.player.turretMaxHP, 1)), color.RGBA{242, 184, 88, 240}, "TURRET")
+	ebitenutil.DebugPrintAt(screen, fmt.Sprintf("%d/%d", g.player.hp, g.player.maxHP), panelW-112, 91)
+	ebitenutil.DebugPrintAt(screen, fmt.Sprintf("%d/%d", g.player.turretHP, g.player.turretMaxHP), panelW-112, 111)
 
 	if g.shieldTick > 0 {
 		ebitenutil.DrawRect(screen, float64(badgeX), 66, 82, 20, color.RGBA{66, 120, 200, 190})
@@ -163,6 +167,18 @@ func drawHUD(screen *ebiten.Image, g *game) {
 	}
 	ebitenutil.DrawRect(screen, barX+1, barY+1, (barW-2)*rate, barH-2, fill)
 	ebitenutil.DebugPrintAt(screen, fmt.Sprintf("%d/%d", g.fort.hp, g.fort.maxHP), int(barX)+int(barW)+8, int(barY)-1)
+}
+
+func drawEnergyBar(screen *ebiten.Image, x, y, w, h, rate float64, fill color.Color, label string) {
+	if rate < 0 {
+		rate = 0
+	}
+	if rate > 1 {
+		rate = 1
+	}
+	ebitenutil.DebugPrintAt(screen, label, int(x), int(y)-12)
+	ebitenutil.DrawRect(screen, x, y, w, h, color.RGBA{38, 42, 48, 220})
+	ebitenutil.DrawRect(screen, x+1, y+1, (w-2)*rate, h-2, fill)
 }
 
 func drawBackground(screen *ebiten.Image) {

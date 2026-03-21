@@ -23,7 +23,15 @@ func (g *game) updatePowerups() {
 				if g.fort.hp > g.fort.maxHP {
 					g.fort.hp = g.fort.maxHP
 				}
-				g.setMessage("Fortress repaired", 90)
+				g.player.hp += 1
+				if g.player.hp > g.player.maxHP {
+					g.player.hp = g.player.maxHP
+				}
+				g.player.turretHP += 2
+				if g.player.turretHP > g.player.turretMaxHP {
+					g.player.turretHP = g.player.turretMaxHP
+				}
+				g.setMessage("Fortress & tank repaired", 90)
 			}
 			g.score += 80
 			continue

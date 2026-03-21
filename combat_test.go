@@ -68,9 +68,13 @@ func TestUpdateBulletsPlayerTakesDamageWithoutShield(t *testing.T) {
 	g.shieldTick = 0
 	g.bullets = []*bullet{{x: g.player.x + 2, y: g.player.y + 2, vx: 0, vy: 0, fromPlayer: false, alive: true, dmg: 1}}
 	hp := g.player.hp
+	turretHP := g.player.turretHP
 	g.updateBullets()
 	if g.player.hp != hp-1 {
 		t.Fatalf("player should take damage")
+	}
+	if g.player.turretHP != turretHP-1 {
+		t.Fatalf("player turret should take damage")
 	}
 }
 

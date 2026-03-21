@@ -19,6 +19,12 @@ func TestStartMatchResetsCoreState(t *testing.T) {
 	if g.fort.hp != fortressMaxHP || g.fort.maxHP != fortressMaxHP {
 		t.Fatalf("fortress hp should reset to %d/%d", fortressMaxHP, fortressMaxHP)
 	}
+	if g.player.hp != playerHullMaxHP || g.player.maxHP != playerHullMaxHP {
+		t.Fatalf("player hull hp should reset to %d/%d", playerHullMaxHP, playerHullMaxHP)
+	}
+	if g.player.turretHP != playerTurretMaxHP || g.player.turretMaxHP != playerTurretMaxHP {
+		t.Fatalf("player turret hp should reset to %d/%d", playerTurretMaxHP, playerTurretMaxHP)
+	}
 }
 
 func TestMaxWaveByDifficulty(t *testing.T) {

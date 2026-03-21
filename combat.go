@@ -68,6 +68,10 @@ func (g *game) updateBullets() {
 				g.spawnExplosion(g.player.x+tankSize/2, g.player.y+tankSize/2, 12)
 			} else {
 				g.player.hp -= b.dmg
+				g.player.turretHP -= b.dmg
+				if g.player.turretHP < 0 {
+					g.player.turretHP = 0
+				}
 				g.spawnExplosion(b.x, b.y, 20)
 			}
 		}

@@ -21,6 +21,8 @@ const (
 	guardHitLoss  = 2
 	fortHitLoss   = 3
 	fortHitDamage = 3
+
+	playerTurnDoubleTapFrames = 14
 )
 
 type direction int
@@ -165,4 +167,6 @@ type game struct {
 	difficulty difficulty
 	enemyBase  int
 	menuIndex  int
+
+	playerTapFrame [4]int
 }

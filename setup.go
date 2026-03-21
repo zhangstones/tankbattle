@@ -42,6 +42,7 @@ func (g *game) startMatch() {
 	g.playerSilentFrames = 0
 
 	g.player = tank{x: screenW/2 - tankSize/2, y: screenH - 110, dir: up, turret: up, speed: 3.2, hp: 5, isPlayer: true}
+	g.resetPlayerTapFrames()
 	g.bullets = g.bullets[:0]
 	g.explosions = g.explosions[:0]
 	g.powerups = g.powerups[:0]
@@ -54,6 +55,12 @@ func (g *game) startMatch() {
 	g.buildArenaObstacles()
 	g.spawnWave(g.wave)
 	g.setMessage(fmt.Sprintf("Wave %d incoming", g.wave), 120)
+}
+
+func (g *game) resetPlayerTapFrames() {
+	for i := range g.playerTapFrame {
+		g.playerTapFrame[i] = -9999
+	}
 }
 
 func (g *game) maxWaveByDifficulty() int {

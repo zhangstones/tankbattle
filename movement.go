@@ -12,35 +12,20 @@ func (g *game) updatePlayer() {
 	if g.player.cooldown > 0 {
 		g.player.cooldown--
 	}
+	g.handlePlayerTurnInput()
+
 	dx, dy := 0.0, 0.0
 	if ebiten.IsKeyPressed(ebiten.KeyW) || ebiten.IsKeyPressed(ebiten.KeyArrowUp) {
 		dy = -g.player.speed
-		g.player.dir = up
 	}
 	if ebiten.IsKeyPressed(ebiten.KeyS) || ebiten.IsKeyPressed(ebiten.KeyArrowDown) {
 		dy = g.player.speed
-		g.player.dir = down
 	}
 	if ebiten.IsKeyPressed(ebiten.KeyA) || ebiten.IsKeyPressed(ebiten.KeyArrowLeft) {
 		dx = -g.player.speed
-		g.player.dir = left
 	}
 	if ebiten.IsKeyPressed(ebiten.KeyD) || ebiten.IsKeyPressed(ebiten.KeyArrowRight) {
 		dx = g.player.speed
-		g.player.dir = right
-	}
-	// Turret can be aimed independently, enabling strafing shots while moving.
-	if ebiten.IsKeyPressed(ebiten.KeyT) {
-		g.player.turret = up
-	}
-	if ebiten.IsKeyPressed(ebiten.KeyG) {
-		g.player.turret = down
-	}
-	if ebiten.IsKeyPressed(ebiten.KeyF) {
-		g.player.turret = left
-	}
-	if ebiten.IsKeyPressed(ebiten.KeyH) {
-		g.player.turret = right
 	}
 	g.tryMoveTank(&g.player, dx, dy)
 
@@ -53,6 +38,32 @@ func (g *game) updatePlayer() {
 			g.player.cooldown = 11
 		}
 	}
+}
+
+func (g *game) handlePlayerTurnInput() {
+	if inpututil.IsKeyJustPressed(ebiten.KeyW) || inpututil.IsKeyJustPressed(ebiten.KeyArrowUp) {
+		g.onPlayerDirTap(up)
+	}
+	if inpututil.IsKeyJustPressed(ebiten.KeyS) || inpututil.IsKeyJustPressed(ebiten.KeyArrowDown) {
+		g.onPlayerDirTap(down)
+	}
+	if inpututil.IsKeyJustPressed(ebiten.KeyA) || inpututil.IsKeyJustPressed(ebiten.KeyArrowLeft) {
+		g.onPlayerDirTap(left)
+	}
+	if inpututil.IsKeyJustPressed(ebiten.KeyD) || inpututil.IsKeyJustPressed(ebiten.KeyArrowRight) {
+		g.onPlayerDirTap(right)
+	}
+}
+
+func (g *game) onPlayerDirTap(d direction) bool {
+	last := g.playerTapFrame[d]
+	g.playerTapFrame[d] = g.frame
+	if g.frame-last > playerTurnDoubleTapFrames {
+		return false
+	}
+	g.player.dir = d
+	g.player.turret = d
+	return true
 }
 
 func (g *game) updateEnemies() {

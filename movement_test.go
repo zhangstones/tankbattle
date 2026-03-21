@@ -318,6 +318,44 @@ func TestOnPlayerFiredResetsSilenceCounter(t *testing.T) {
 	}
 }
 
+func TestOnPlayerDirTapNeedsDoubleTapToTurn(t *testing.T) {
+	g := newPlayingGameForTest()
+	g.player.dir = up
+	g.player.turret = up
+
+	g.frame = 10
+	if g.onPlayerDirTap(left) {
+		t.Fatalf("first tap should not turn")
+	}
+	if g.player.dir != up || g.player.turret != up {
+		t.Fatalf("orientation should stay unchanged after first tap")
+	}
+
+	g.frame = 19
+	if !g.onPlayerDirTap(left) {
+		t.Fatalf("second tap within window should turn")
+	}
+	if g.player.dir != left || g.player.turret != left {
+		t.Fatalf("double-tap should sync body and turret direction")
+	}
+}
+
+func TestOnPlayerDirTapOutsideWindowDoesNotTurn(t *testing.T) {
+	g := newPlayingGameForTest()
+	g.player.dir = up
+	g.player.turret = up
+
+	g.frame = 20
+	g.onPlayerDirTap(right)
+	g.frame = 20 + playerTurnDoubleTapFrames + 1
+	if g.onPlayerDirTap(right) {
+		t.Fatalf("tap outside double-tap window should not turn")
+	}
+	if g.player.dir != up || g.player.turret != up {
+		t.Fatalf("direction should remain unchanged when window exceeded")
+	}
+}
+
 func TestSingleEnemySilenceEventuallyDamagesFortress(t *testing.T) {
 	rand.Seed(5)
 	g := newPlayingGameForTest()

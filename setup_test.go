@@ -190,3 +190,24 @@ func TestScreenAndFortressAlignToGrid(t *testing.T) {
 		t.Fatalf("fortress bottom gap should be one grid (%d), got %d", gridSize, bottomGap)
 	}
 }
+
+func TestPlayerSpawnIsNotOverlappedAndCanMove(t *testing.T) {
+	g := newPlayingGameForTest()
+	pr := tankRect(g.player)
+	if overlap(pr, g.fort.box) {
+		t.Fatalf("player should not overlap fortress at spawn")
+	}
+	for _, w := range g.walls {
+		if overlap(pr, w.box) {
+			t.Fatalf("player should not overlap wall at spawn")
+		}
+	}
+
+	startY := g.player.y
+	if !g.tryMoveTank(&g.player, 0, -g.player.speed) {
+		t.Fatalf("player should be able to move upward from spawn")
+	}
+	if g.player.y >= startY {
+		t.Fatalf("player Y should decrease after upward move")
+	}
+}

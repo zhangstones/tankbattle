@@ -41,9 +41,15 @@ func (g *game) startMatch() {
 	g.rapidTick = 0
 	g.playerSilentFrames = 0
 
+	fortW := float64(gridSize * 2)
+	fortH := float64(gridSize)
+	fortX := float64((screenW - int(fortW)) / 2)
+	fortY := float64(screenH - gridSize - int(fortH))
+	g.fort = fortress{box: rect{x: fortX, y: fortY, w: fortW, h: fortH}, hp: fortressMaxHP, maxHP: fortressMaxHP}
+
 	g.player = tank{
 		x:           screenW/2 - tankSize/2,
-		y:           screenH - 110,
+		y:           g.fort.box.y - float64(gridSize) - tankSize,
 		dir:         up,
 		turret:      up,
 		speed:       3.2,
@@ -58,12 +64,6 @@ func (g *game) startMatch() {
 	g.explosions = g.explosions[:0]
 	g.powerups = g.powerups[:0]
 	g.enemies = g.enemies[:0]
-
-	fortW := float64(gridSize * 2)
-	fortH := float64(gridSize)
-	fortX := float64((screenW - int(fortW)) / 2)
-	fortY := float64(screenH - gridSize - int(fortH))
-	g.fort = fortress{box: rect{x: fortX, y: fortY, w: fortW, h: fortH}, hp: fortressMaxHP, maxHP: fortressMaxHP}
 
 	g.walls = make([]*wall, 0, 128)
 	g.buildFortDefense()

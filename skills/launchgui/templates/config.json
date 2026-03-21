@@ -1,0 +1,19 @@
+{
+  "apps": {
+    "notepad": {
+      "exe": "C:\\Windows\\System32\\notepad.exe",
+      "workdir": "C:\\Windows\\System32",
+      "processNames": ["notepad"]
+    },
+    "calc": {
+      "exe": "C:\\Windows\\System32\\calc.exe",
+      "workdir": "C:\\Windows\\System32",
+      "processNames": ["CalculatorApp", "ApplicationFrameHost", "calc"]
+    },
+    "tankbattle": {
+      "exe": "D:\\Workspace\\tankbattle\\tankbattle_gui.exe",
+      "workdir": "D:\\Workspace\\tankbattle",
+      "processNames": ["tankbattle_gui", "tankbattle"]
+    }
+  }
+}

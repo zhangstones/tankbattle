@@ -87,3 +87,12 @@ func TestFireHelpTextMergedWithMainHelpLine(t *testing.T) {
 		t.Fatalf("fire hint should be merged into combat help line: %q", menuHelpLine3)
 	}
 }
+
+func TestHistoryPanelLayoutIsSpacious(t *testing.T) {
+	if historyPanelW < 700 {
+		t.Fatalf("history panel should be wide enough, got width=%d", historyPanelW)
+	}
+	if hudRankingLineGap < 22 {
+		t.Fatalf("history row line gap should be spacious, got gap=%d", hudRankingLineGap)
+	}
+}

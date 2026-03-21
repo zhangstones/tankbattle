@@ -45,7 +45,7 @@ const (
 
 	scoreHistoryLimit = 100
 	hudRankingRows    = 5
-	hudRankingLineGap = 14
+	hudRankingLineGap = 26
 )
 
 type direction int

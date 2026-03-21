@@ -43,10 +43,10 @@ const (
 
 	menuTextHeight = 16
 
-	historyPanelX = 170
+	historyPanelX = 120
 	historyPanelY = 90
-	historyPanelW = 620
-	historyPanelH = 420
+	historyPanelW = 720
+	historyPanelH = 460
 )
 
 const (
@@ -234,23 +234,46 @@ func drawHUD(screen *ebiten.Image, g *game) {
 }
 
 func drawHistoryPanel(screen *ebiten.Image, g *game) {
+	const (
+		historyPadX        = 24
+		historyTitleYOff   = 18
+		historyHeaderYOff  = 56
+		historyRowsYOff    = 82
+		historyFooterYOff  = 24
+		historyColRankX    = 0
+		historyColScoreX   = 86
+		historyColTimeX    = 220
+		historyRowBgHeight = 22
+	)
+
 	ebitenutil.DrawRect(screen, historyPanelX, historyPanelY, historyPanelW, historyPanelH, color.RGBA{8, 12, 18, 230})
 	ebitenutil.DrawRect(screen, historyPanelX+2, historyPanelY+2, historyPanelW-4, historyPanelH-4, color.RGBA{28, 56, 68, 165})
-	ebitenutil.DebugPrintAt(screen, "SCORE HISTORY  (H hide, Wheel/PgUp/PgDn scroll)", historyPanelX+20, historyPanelY+16)
+	ebitenutil.DebugPrintAt(screen, "SCORE HISTORY  (H hide, Wheel/PgUp/PgDn scroll)", historyPanelX+historyPadX, historyPanelY+historyTitleYOff)
+	ebitenutil.DebugPrintAt(screen, "RANK", historyPanelX+historyPadX+historyColRankX, historyPanelY+historyHeaderYOff)
+	ebitenutil.DebugPrintAt(screen, "SCORE", historyPanelX+historyPadX+historyColScoreX, historyPanelY+historyHeaderYOff)
+	ebitenutil.DebugPrintAt(screen, "TIME (UTC)", historyPanelX+historyPadX+historyColTimeX, historyPanelY+historyHeaderYOff)
 
 	entries, start := g.visibleRankEntries()
 	if len(entries) == 0 {
-		ebitenutil.DebugPrintAt(screen, "No historical records yet.", historyPanelX+20, historyPanelY+52)
+		ebitenutil.DebugPrintAt(screen, "No historical records yet.", historyPanelX+historyPadX, historyPanelY+historyRowsYOff)
 		return
 	}
 
-	y := historyPanelY + 50
+	y := historyPanelY + historyRowsYOff
 	for i, e := range entries {
 		rank := start + i + 1
-		line := fmt.Sprintf("#%02d  %6d  %s", rank, e.Score, formatScoreTime(e.At))
-		ebitenutil.DebugPrintAt(screen, line, historyPanelX+20, y+i*hudRankingLineGap)
+		rowY := y + i*hudRankingLineGap
+		rowBg := color.RGBA{16, 34, 44, 150}
+		if i%2 == 1 {
+			rowBg = color.RGBA{18, 38, 50, 180}
+		}
+		rowW := float64(historyPanelW - historyPadX*2 + 12)
+		ebitenutil.DrawRect(screen, float64(historyPanelX+historyPadX-6), float64(rowY-2), rowW, historyRowBgHeight, rowBg)
+		ebitenutil.DebugPrintAt(screen, fmt.Sprintf("#%02d", rank), historyPanelX+historyPadX+historyColRankX, rowY)
+		ebitenutil.DebugPrintAt(screen, fmt.Sprintf("%6d", e.Score), historyPanelX+historyPadX+historyColScoreX, rowY)
+		ebitenutil.DebugPrintAt(screen, formatScoreTime(e.At), historyPanelX+historyPadX+historyColTimeX, rowY)
 	}
-	ebitenutil.DebugPrintAt(screen, fmt.Sprintf("Showing %d-%d / %d", start+1, start+len(entries), len(g.scoreHistory)), historyPanelX+20, historyPanelY+historyPanelH-22)
+	ebitenutil.DebugPrintAt(screen, fmt.Sprintf("Showing %d-%d / %d", start+1, start+len(entries), len(g.scoreHistory)), historyPanelX+historyPadX, historyPanelY+historyPanelH-historyFooterYOff)
 }
 
 func formatScoreTime(ts string) string {

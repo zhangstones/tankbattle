@@ -38,3 +38,52 @@ func TestHUDAndStatusUseThinFrame(t *testing.T) {
 		t.Fatalf("status frame should be thin, got inset=%d", statusInset)
 	}
 }
+
+func TestMenuOptionsDoNotOverlapFooterTipBar(t *testing.T) {
+	if menuOptionsBottomY(menuItemCount) >= menuFooterTopY() {
+		t.Fatalf("menu options should stay above tip bar: optionsBottom=%d footerTop=%d", menuOptionsBottomY(menuItemCount), menuFooterTopY())
+	}
+}
+
+func TestMenuOptionsKeepTopSpacingFromHelpSection(t *testing.T) {
+	if menuOptionsTopY() <= menuHelpSectionBottomY() {
+		t.Fatalf("menu options should be below help section: optionsTop=%d helpBottom=%d", menuOptionsTopY(), menuHelpSectionBottomY())
+	}
+}
+
+func TestMenuHelpAndOptionsDistanceIsCompact(t *testing.T) {
+	gap := menuHelpToOptionsDistanceY()
+	if gap < 8 || gap > 20 {
+		t.Fatalf("menu help/options gap should be compact and readable: got %d", gap)
+	}
+}
+
+func TestMenuTitleIsCenteredInHeader(t *testing.T) {
+	leftMargin := menuTitleX() - menuHeaderX
+	rightMargin := (menuHeaderX + menuHeaderW) - (menuTitleX() + textWidth(menuTitleText))
+	diff := leftMargin - rightMargin
+	if diff < 0 {
+		diff = -diff
+	}
+	if diff > 1 {
+		t.Fatalf("menu title should be centered: leftMargin=%d rightMargin=%d", leftMargin, rightMargin)
+	}
+}
+
+func TestMenuTitleIsVerticallyCenteredInHeader(t *testing.T) {
+	topMargin := menuTitleY() - menuHeaderY
+	bottomMargin := (menuHeaderY + menuHeaderH) - (menuTitleY() + menuTextHeight)
+	diff := topMargin - bottomMargin
+	if diff < 0 {
+		diff = -diff
+	}
+	if diff > 1 {
+		t.Fatalf("menu title should be vertically centered: topMargin=%d bottomMargin=%d", topMargin, bottomMargin)
+	}
+}
+
+func TestFireHelpTextMergedWithMainHelpLine(t *testing.T) {
+	if !strings.Contains(menuHelpLine3, "FIRE J/Space") {
+		t.Fatalf("fire hint should be merged into combat help line: %q", menuHelpLine3)
+	}
+}

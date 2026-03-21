@@ -15,6 +15,40 @@ const (
 	hudFrameInset = 2
 	statusInset   = 2
 	hudMessageGap = 12
+
+	menuPanelX = 96
+	menuPanelY = 52
+	menuPanelW = 768
+	menuPanelH = 556
+
+	menuInnerInset = 6
+	menuHeaderX    = 132
+	menuHeaderY    = 92
+	menuHeaderW    = 696
+	menuHeaderH    = 66
+
+	menuFooterY = 580
+
+	menuHelpLineGap          = 20
+	menuHelpLineCount        = 3
+	menuHelpTopGapFromHeader = 24
+	menuHelpBottomPadding    = 14
+	menuHelpToOptionGap      = 14
+
+	menuOptionBoxHeight     = 50
+	menuOptionTextTopInset  = 12
+	menuOptionMinGap        = 8
+	menuOptionMaxGap        = 16
+	menuOptionBottomPadding = 12
+
+	menuTextHeight = 16
+)
+
+const (
+	menuTitleText = "TANK BATTLE // MISSION SETTINGS"
+	menuHelpLine1 = "UP/DOWN select, LEFT/RIGHT modify/toggle, ENTER start, FIRE J/Space"
+	menuHelpLine2 = "Shortcuts: 1/2/3 difficulty, +/- enemy amount"
+	menuHelpLine3 = "Combat: hold WASD/Arrow strafe, double-tap WASD/Arrow turn, FIRE J/Space"
 )
 
 func (g *game) Draw(screen *ebiten.Image) {
@@ -91,14 +125,15 @@ func (g *game) Draw(screen *ebiten.Image) {
 }
 
 func drawMenu(screen *ebiten.Image, g *game) {
-	ebitenutil.DrawRect(screen, 130, 80, 700, 480, color.RGBA{8, 14, 20, 235})
-	ebitenutil.DrawRect(screen, 136, 86, 688, 468, color.RGBA{30, 64, 74, 130})
-	ebitenutil.DrawRect(screen, 164, 116, 632, 62, color.RGBA{16, 92, 90, 120})
-	ebitenutil.DebugPrintAt(screen, "TANK BATTLE // MISSION SETTINGS", 320, 140)
-	ebitenutil.DebugPrintAt(screen, "UP/DOWN select, LEFT/RIGHT modify/toggle, ENTER start", 216, 198)
-	ebitenutil.DebugPrintAt(screen, "Shortcuts: 1/2/3 difficulty, +/- enemy amount", 272, 218)
-	ebitenutil.DebugPrintAt(screen, "Combat: hold WASD/Arrow strafe, double-tap WASD/Arrow turn", 188, 238)
-	ebitenutil.DebugPrintAt(screen, "Fire J/Space", 420, 256)
+	layout := computeMenuLayout(menuItemCount)
+
+	ebitenutil.DrawRect(screen, menuPanelX, menuPanelY, menuPanelW, menuPanelH, color.RGBA{8, 14, 20, 235})
+	ebitenutil.DrawRect(screen, menuPanelX+menuInnerInset, menuPanelY+menuInnerInset, menuPanelW-menuInnerInset*2, menuPanelH-menuInnerInset*2, color.RGBA{30, 64, 74, 130})
+	ebitenutil.DrawRect(screen, menuHeaderX, menuHeaderY, menuHeaderW, menuHeaderH, color.RGBA{16, 92, 90, 120})
+	ebitenutil.DebugPrintAt(screen, menuTitleText, menuTitleX(), menuTitleY())
+	ebitenutil.DebugPrintAt(screen, menuHelpLine1, menuHelpTextX(menuHelpLine1), layout.helpLineY[0])
+	ebitenutil.DebugPrintAt(screen, menuHelpLine2, menuHelpTextX(menuHelpLine2), layout.helpLineY[1])
+	ebitenutil.DebugPrintAt(screen, menuHelpLine3, menuHelpTextX(menuHelpLine3), layout.helpLineY[2])
 
 	diffText := "Normal"
 	diffDesc := "Balanced speed and enemy fire rate."
@@ -126,18 +161,18 @@ func drawMenu(screen *ebiten.Image, g *game) {
 	}
 
 	for i := 0; i < len(titles); i++ {
-		y := 268 + i*56
+		y := layout.optionTextY[i]
 		bg := color.RGBA{20, 34, 40, 180}
 		if g.menuIndex == i {
 			bg = color.RGBA{72, 138, 100, 170}
 		}
-		ebitenutil.DrawRect(screen, 214, float64(y-14), 532, 58, bg)
+		ebitenutil.DrawRect(screen, 214, float64(layout.optionBoxTopY[i]), 532, menuOptionBoxHeight, bg)
 		ebitenutil.DebugPrintAt(screen, titles[i], 246, y)
 		ebitenutil.DebugPrintAt(screen, descs[i], 246, y+20)
 	}
 
-	ebitenutil.DrawRect(screen, 164, 516, 632, 28, color.RGBA{18, 26, 34, 220})
-	ebitenutil.DebugPrintAt(screen, "Tip: Press [R] to restart instantly, [M] to return menu.", 232, 524)
+	ebitenutil.DrawRect(screen, 164, menuFooterY, 632, 28, color.RGBA{18, 26, 34, 220})
+	ebitenutil.DebugPrintAt(screen, "Tip: Press [R] to restart instantly, [M] to return menu.", 232, menuFooterY+8)
 }
 
 func drawHUD(screen *ebiten.Image, g *game) {
@@ -405,4 +440,91 @@ func hudBottomY() int {
 
 func messageBoxTopY() int {
 	return hudBottomY() + hudMessageGap
+}
+
+func menuOptionsBottomY(itemCount int) int {
+	return computeMenuLayout(itemCount).optionsBottomY
+}
+
+func menuFooterTopY() int {
+	return menuFooterY
+}
+
+func menuOptionsTopY() int {
+	return computeMenuLayout(menuItemCount).optionsTopY
+}
+
+func menuHelpSectionBottomY() int {
+	return computeMenuLayout(menuItemCount).helpBottomY
+}
+
+func menuHelpToOptionsDistanceY() int {
+	return menuOptionsTopY() - menuHelpSectionBottomY()
+}
+
+func menuTitleX() int {
+	return centeredTextX(menuTitleText, menuHeaderX, menuHeaderW)
+}
+
+func menuTitleY() int {
+	return centeredTextY(menuHeaderY, menuHeaderH, menuTextHeight)
+}
+
+func menuHelpTextX(s string) int {
+	return centeredTextX(s, 164, 632)
+}
+
+type menuLayout struct {
+	helpLineY      [menuHelpLineCount]int
+	helpBottomY    int
+	optionsTopY    int
+	optionsBottomY int
+	optionBoxTopY  []int
+	optionTextY    []int
+}
+
+func computeMenuLayout(optionCount int) menuLayout {
+	l := menuLayout{
+		optionBoxTopY: make([]int, 0, maxInt(optionCount, 0)),
+		optionTextY:   make([]int, 0, maxInt(optionCount, 0)),
+	}
+
+	helpStartY := menuHeaderY + menuHeaderH + menuHelpTopGapFromHeader
+	for i := 0; i < menuHelpLineCount; i++ {
+		l.helpLineY[i] = helpStartY + i*menuHelpLineGap
+	}
+	l.helpBottomY = l.helpLineY[menuHelpLineCount-1] + menuHelpBottomPadding
+	l.optionsTopY = l.helpBottomY + menuHelpToOptionGap
+
+	if optionCount <= 0 {
+		l.optionsBottomY = l.optionsTopY
+		return l
+	}
+
+	gap := menuOptionMinGap
+	if optionCount > 1 {
+		available := menuFooterY - menuOptionBottomPadding - l.optionsTopY
+		totalBoxHeight := optionCount * menuOptionBoxHeight
+		minNeed := totalBoxHeight + (optionCount-1)*menuOptionMinGap
+		if available > minNeed {
+			flexible := (available - totalBoxHeight) / (optionCount - 1)
+			gap = clampInt(flexible, menuOptionMinGap, menuOptionMaxGap)
+		}
+	}
+
+	for i := 0; i < optionCount; i++ {
+		top := l.optionsTopY + i*(menuOptionBoxHeight+gap)
+		l.optionBoxTopY = append(l.optionBoxTopY, top)
+		l.optionTextY = append(l.optionTextY, top+menuOptionTextTopInset)
+	}
+	l.optionsBottomY = l.optionBoxTopY[len(l.optionBoxTopY)-1] + menuOptionBoxHeight
+	return l
+}
+
+func centeredTextX(s string, areaX, areaW int) int {
+	return areaX + (areaW-textWidth(s))/2
+}
+
+func centeredTextY(areaY, areaH, textH int) int {
+	return areaY + (areaH-textH)/2
 }

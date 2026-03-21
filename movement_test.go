@@ -390,6 +390,19 @@ func TestCanMoveOnHeldRespectsGraceAndMoveLock(t *testing.T) {
 	}
 }
 
+func TestCanMoveOnHeldBootstrapsWhenPressedWithoutJustPressed(t *testing.T) {
+	g := newPlayingGameForTest()
+	g.resetPlayerTapFrames()
+	g.frame = 100
+	if g.canMoveOnHeld(right, true) {
+		t.Fatalf("first observed pressed frame should be treated as grace window")
+	}
+	g.frame = 100 + playerTapGraceFrames
+	if !g.canMoveOnHeld(right, true) {
+		t.Fatalf("held input should move after grace even without just-pressed signal")
+	}
+}
+
 func TestSingleEnemySilenceEventuallyDamagesFortress(t *testing.T) {
 	rand.Seed(5)
 	g := newPlayingGameForTest()

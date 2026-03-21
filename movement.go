@@ -15,10 +15,10 @@ func (g *game) updatePlayer() {
 	g.handlePlayerTurnInput()
 
 	dx, dy := 0.0, 0.0
-	w := ebiten.IsKeyPressed(ebiten.KeyW)
-	s := ebiten.IsKeyPressed(ebiten.KeyS)
-	a := ebiten.IsKeyPressed(ebiten.KeyA)
-	d := ebiten.IsKeyPressed(ebiten.KeyD)
+	w := ebiten.IsKeyPressed(ebiten.KeyW) || ebiten.IsKeyPressed(ebiten.KeyArrowUp)
+	s := ebiten.IsKeyPressed(ebiten.KeyS) || ebiten.IsKeyPressed(ebiten.KeyArrowDown)
+	a := ebiten.IsKeyPressed(ebiten.KeyA) || ebiten.IsKeyPressed(ebiten.KeyArrowLeft)
+	d := ebiten.IsKeyPressed(ebiten.KeyD) || ebiten.IsKeyPressed(ebiten.KeyArrowRight)
 	if g.canMoveOnHeld(up, w) {
 		dy = -g.player.speed
 	}

@@ -215,11 +215,11 @@ func drawBackground(screen *ebiten.Image) {
 		b := uint8(46 + 8*t)
 		ebitenutil.DrawRect(screen, 0, float64(y), screenW, 3, color.RGBA{r, g, b, 255})
 	}
-	for y := 28; y < screenH; y += 30 {
+	for y := 0; y < screenH; y += gridSize {
 		ebitenutil.DrawLine(screen, 0, float64(y), screenW, float64(y), color.RGBA{72, 64, 54, 35})
 	}
-	for x := 20; x < screenW; x += 120 {
-		for y := 0; y < screenH; y += 48 {
+	for x := 20; x < screenW; x += gridSize * 4 {
+		for y := 0; y < screenH; y += gridSize + 18 {
 			ebitenutil.DrawRect(screen, float64(x), float64(y), 36, 4, color.RGBA{58, 54, 48, 45})
 			ebitenutil.DrawRect(screen, float64(x+46), float64(y+14), 36, 4, color.RGBA{58, 54, 48, 36})
 		}

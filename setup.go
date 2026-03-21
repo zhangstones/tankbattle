@@ -59,7 +59,11 @@ func (g *game) startMatch() {
 	g.powerups = g.powerups[:0]
 	g.enemies = g.enemies[:0]
 
-	g.fort = fortress{box: rect{x: screenW/2 - 32, y: screenH - 48, w: 64, h: 30}, hp: fortressMaxHP, maxHP: fortressMaxHP}
+	fortW := float64(gridSize * 2)
+	fortH := float64(gridSize)
+	fortX := float64((screenW - int(fortW)) / 2)
+	fortY := float64(screenH - gridSize - int(fortH))
+	g.fort = fortress{box: rect{x: fortX, y: fortY, w: fortW, h: fortH}, hp: fortressMaxHP, maxHP: fortressMaxHP}
 
 	g.walls = make([]*wall, 0, 128)
 	g.buildFortDefense()
@@ -122,13 +126,11 @@ func (g *game) buildFortDefense() {
 	bx := g.fort.box.x
 	by := g.fort.box.y
 	bw := g.fort.box.w
-	block := 20.0
-	for i := 0; i < 4; i++ {
-		g.addDestructibleChunks(rect{x: bx - block + float64(i)*block, y: by - block, w: block, h: block}, tankSize, 1, true)
-		g.addDestructibleChunks(rect{x: bx + bw - float64(i)*block, y: by - block, w: block, h: block}, tankSize, 1, true)
-	}
-	g.addDestructibleChunks(rect{x: bx - block, y: by - 4, w: block, h: 34}, tankSize, 1, true)
-	g.addDestructibleChunks(rect{x: bx + bw, y: by - 4, w: block, h: 34}, tankSize, 1, true)
+	block := float64(gridSize)
+	guardHP := 2
+	g.addDestructibleChunks(rect{x: bx - block, y: by - block, w: bw + block*2, h: block}, block, guardHP, true)
+	g.addDestructibleChunks(rect{x: bx - block, y: by, w: block, h: block}, block, guardHP, true)
+	g.addDestructibleChunks(rect{x: bx + bw, y: by, w: block, h: block}, block, guardHP, true)
 }
 
 func (g *game) buildArenaObstacles() {

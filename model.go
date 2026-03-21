@@ -1,8 +1,13 @@
 package tankbattle
 
 const (
-	screenW = 960
-	screenH = 640
+	gridSize = 30
+
+	screenGridW = 32
+	screenGridH = 22
+
+	screenW = gridSize * screenGridW
+	screenH = gridSize * screenGridH
 
 	tankSize   = 34.0
 	bulletSize = 6.0

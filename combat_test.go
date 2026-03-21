@@ -140,6 +140,38 @@ func TestGuardWallNotDestroyedInOneHit(t *testing.T) {
 	}
 }
 
+func TestFortGuardWallNeedsTwoHitsToDestroy(t *testing.T) {
+	g := newPlayingGameForTest()
+	var target *wall
+	for _, w := range g.walls {
+		if w.guard {
+			target = w
+			break
+		}
+	}
+	if target == nil {
+		t.Fatalf("expected at least one fortress guard wall chunk")
+	}
+	px := target.box.x + target.box.w/2
+	py := target.box.y + target.box.h/2
+	g.bullets = []*bullet{{x: px, y: py, vx: 0, vy: 0, fromPlayer: false, alive: true, dmg: 1}}
+	g.updateBullets()
+	if target.hp != 1 {
+		t.Fatalf("first hit should reduce guard hp to 1, got %d", target.hp)
+	}
+	g.cleanupWalls()
+	if target.hp <= 0 {
+		t.Fatalf("guard chunk should still exist after first hit")
+	}
+
+	g.bullets = []*bullet{{x: px, y: py, vx: 0, vy: 0, fromPlayer: false, alive: true, dmg: 1}}
+	g.updateBullets()
+	g.cleanupWalls()
+	if target.hp > 0 {
+		t.Fatalf("second hit should destroy guard chunk, got hp=%d", target.hp)
+	}
+}
+
 func TestObstacleChunkOneHitRemovesOnlyOnePiece(t *testing.T) {
 	g := newPlayingGameForTest()
 	g.walls = []*wall{

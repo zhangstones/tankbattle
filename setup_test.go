@@ -176,3 +176,17 @@ func TestArenaObstacleChunksMatchTankWidth(t *testing.T) {
 		t.Fatalf("expected destructible obstacle chunks")
 	}
 }
+
+func TestScreenAndFortressAlignToGrid(t *testing.T) {
+	g := newPlayingGameForTest()
+	if screenW%gridSize != 0 || screenH%gridSize != 0 {
+		t.Fatalf("screen size must be integer multiple of grid: %dx%d grid=%d", screenW, screenH, gridSize)
+	}
+	if int(g.fort.box.x)%gridSize != 0 || int(g.fort.box.y)%gridSize != 0 {
+		t.Fatalf("fortress must align to grid lines, got x=%.2f y=%.2f", g.fort.box.x, g.fort.box.y)
+	}
+	bottomGap := screenH - int(g.fort.box.y+g.fort.box.h)
+	if bottomGap != gridSize {
+		t.Fatalf("fortress bottom gap should be one grid (%d), got %d", gridSize, bottomGap)
+	}
+}

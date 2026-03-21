@@ -129,3 +129,35 @@ func TestTogglePauseSetsExpectedMessage(t *testing.T) {
 		t.Fatalf("togglePause should resume and set resume message")
 	}
 }
+
+func TestUpdateInMenuAdvancesAudioFrame(t *testing.T) {
+	g := newGame()
+	g.state = stateMenu
+	before := g.audioFrame
+	if err := g.Update(); err != nil {
+		t.Fatalf("Update error: %v", err)
+	}
+	if g.audioFrame <= before {
+		t.Fatalf("audio frame should advance in menu update, before=%d after=%d", before, g.audioFrame)
+	}
+}
+
+func TestStartMatchDoesNotResetAudioFrame(t *testing.T) {
+	g := newGame()
+	g.audioFrame = 123
+	g.startMatch()
+	if g.audioFrame != 123 {
+		t.Fatalf("startMatch should not reset audio frame, got %d", g.audioFrame)
+	}
+}
+
+func TestPlaySFXUsesAudioFrame(t *testing.T) {
+	g := newGame()
+	mock := &mockSFXPlayer{enabled: true}
+	g.audio = mock
+	g.audioFrame = 77
+	g.playSFX(sfxMenuMove)
+	if frame, ok := mock.lastFrame(); !ok || frame != 77 {
+		t.Fatalf("playSFX should pass audio frame, got %d (ok=%v)", frame, ok)
+	}
+}

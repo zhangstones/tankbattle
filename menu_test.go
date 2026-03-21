@@ -125,3 +125,23 @@ func TestMenuSoundVolumeBounds(t *testing.T) {
 		t.Fatalf("volume should decrease by 25, got %d", g.soundVolume)
 	}
 }
+
+func TestMenuBlockedSFXAtBounds(t *testing.T) {
+	g := newGame()
+	mock := &mockSFXPlayer{enabled: true}
+	g.audio = mock
+
+	g.menuIndex = 0
+	g.difficulty = diffHard
+	g.applyMenuAction(menuInc)
+	if last, ok := mock.last(); !ok || last != sfxMenuBlocked {
+		t.Fatalf("expected blocked sfx on difficulty upper bound, got %v (ok=%v)", last, ok)
+	}
+
+	g.menuIndex = 3
+	g.soundVolume = 0
+	g.applyMenuAction(menuDec)
+	if last, ok := mock.last(); !ok || last != sfxMenuBlocked {
+		t.Fatalf("expected blocked sfx on volume lower bound, got %v (ok=%v)", last, ok)
+	}
+}

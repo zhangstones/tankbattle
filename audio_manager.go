@@ -22,18 +22,38 @@ const (
 	sfxExplosionSmall
 	sfxExplosionLarge
 	sfxPowerupSpawn
-	sfxPowerupPickup
+	sfxPowerupPickupShield
+	sfxPowerupPickupRapid
+	sfxPowerupPickupRepair
 	sfxMenuMove
 	sfxMenuConfirm
+	sfxMenuBlocked
 	sfxPauseToggle
 	sfxWin
 	sfxLose
+	sfxWavePrepare
+	sfxWaveStart
+	sfxBuffShieldOff
+	sfxBuffRapidOff
+	sfxDestroyEnemy
+	sfxDestroyPlayer
+)
+
+type sfxGroup int
+
+const (
+	sfxGroupCombat sfxGroup = iota
+	sfxGroupPowerup
+	sfxGroupUI
+	sfxGroupState
 )
 
 type sfxClip struct {
 	pcm      []byte
 	cooldown int
 	volume   float64
+	group    sfxGroup
+	priority int
 }
 
 type audioManager struct {
@@ -44,7 +64,15 @@ type audioManager struct {
 	maxPlayers   int
 	lastPlayed   map[sfxID]int
 	clips        map[sfxID]sfxClip
-	players      []*audio.Player
+	players      []activePlayer
+	groupGain    map[sfxGroup]float64
+	groupCap     map[sfxGroup]int
+	priorityTick int
+}
+
+type activePlayer struct {
+	group  sfxGroup
+	player *audio.Player
 }
 
 var (
@@ -61,6 +89,19 @@ func newAudioManager() *audioManager {
 		maxPlayers:   16,
 		lastPlayed:   map[sfxID]int{},
 		clips:        map[sfxID]sfxClip{},
+		groupGain: map[sfxGroup]float64{
+			sfxGroupCombat:  1.0,
+			sfxGroupPowerup: 0.86,
+			sfxGroupUI:      0.62,
+			sfxGroupState:   0.82,
+		},
+		groupCap: map[sfxGroup]int{
+			sfxGroupCombat:  10,
+			sfxGroupPowerup: 3,
+			sfxGroupUI:      3,
+			sfxGroupState:   2,
+		},
+		priorityTick: -9999,
 	}
 	a.loadEmbeddedSFX()
 	return a
@@ -103,28 +144,79 @@ func (a *audioManager) Play(id sfxID, frame int) {
 		return
 	}
 	a.sweepStoppedPlayers()
-	if len(a.players) >= a.maxPlayers {
-		_ = a.players[0].Close()
-		a.players = a.players[1:]
-	}
+	a.enforceCapacity(clip.group)
 
 	p := audio.NewPlayerFromBytes(a.ctx, clip.pcm)
-	p.SetVolume(clip.volume * a.masterVolume * a.sfxVolume)
+	duck := a.duckMultiplier(clip.group, frame)
+	groupGain := a.groupGain[clip.group]
+	p.SetVolume(clip.volume * groupGain * duck * a.masterVolume * a.sfxVolume)
 	p.Play()
-	a.players = append(a.players, p)
+	a.players = append(a.players, activePlayer{group: clip.group, player: p})
 	a.lastPlayed[id] = frame
+	if clip.priority > 0 {
+		a.priorityTick = frame
+	}
 }
 
 func (a *audioManager) sweepStoppedPlayers() {
 	alive := a.players[:0]
-	for _, p := range a.players {
-		if p.IsPlaying() {
-			alive = append(alive, p)
+	for _, entry := range a.players {
+		if entry.player.IsPlaying() {
+			alive = append(alive, entry)
 			continue
 		}
-		_ = p.Close()
+		_ = entry.player.Close()
 	}
 	a.players = alive
+}
+
+func (a *audioManager) enforceCapacity(group sfxGroup) {
+	if len(a.players) >= a.maxPlayers {
+		_ = a.players[0].player.Close()
+		a.players = a.players[1:]
+	}
+	capByGroup := a.groupCap[group]
+	if capByGroup <= 0 {
+		return
+	}
+	count := 0
+	for _, entry := range a.players {
+		if entry.group == group {
+			count++
+		}
+	}
+	if count < capByGroup {
+		return
+	}
+	for i, entry := range a.players {
+		if entry.group != group {
+			continue
+		}
+		_ = entry.player.Close()
+		a.players = append(a.players[:i], a.players[i+1:]...)
+		return
+	}
+}
+
+func (a *audioManager) duckMultiplier(group sfxGroup, frame int) float64 {
+	if group == sfxGroupState {
+		return 1.0
+	}
+	since := frame - a.priorityTick
+	return duckMultiplier(group, since)
+}
+
+func duckMultiplier(group sfxGroup, framesSincePriority int) float64 {
+	if framesSincePriority < 0 || framesSincePriority > 45 {
+		return 1.0
+	}
+	if group == sfxGroupUI {
+		return 0.60
+	}
+	if group == sfxGroupCombat || group == sfxGroupPowerup {
+		return 0.76
+	}
+	return 1.0
 }
 
 func (a *audioManager) loadEmbeddedSFX() {
@@ -133,22 +225,33 @@ func (a *audioManager) loadEmbeddedSFX() {
 		path     string
 		cooldown int
 		volume   float64
+		group    sfxGroup
+		priority int
 	}
 	manifest := []item{
-		{id: sfxShootPlayer, path: "assets/sfx/shoot_player.wav", cooldown: 5, volume: 0.70},
-		{id: sfxShootEnemy, path: "assets/sfx/shoot_enemy.wav", cooldown: 7, volume: 0.66},
-		{id: sfxHitWall, path: "assets/sfx/hit_wall.wav", cooldown: 3, volume: 0.58},
-		{id: sfxHitTank, path: "assets/sfx/hit_tank.wav", cooldown: 4, volume: 0.65},
-		{id: sfxHitFortress, path: "assets/sfx/hit_fortress.wav", cooldown: 5, volume: 0.72},
-		{id: sfxExplosionSmall, path: "assets/sfx/explosion_small.wav", cooldown: 5, volume: 0.68},
-		{id: sfxExplosionLarge, path: "assets/sfx/explosion_large.wav", cooldown: 8, volume: 0.78},
-		{id: sfxPowerupSpawn, path: "assets/sfx/powerup_spawn.wav", cooldown: 10, volume: 0.52},
-		{id: sfxPowerupPickup, path: "assets/sfx/powerup_pickup.wav", cooldown: 5, volume: 0.70},
-		{id: sfxMenuMove, path: "assets/sfx/menu_move.wav", cooldown: 2, volume: 0.44},
-		{id: sfxMenuConfirm, path: "assets/sfx/menu_confirm.wav", cooldown: 3, volume: 0.56},
-		{id: sfxPauseToggle, path: "assets/sfx/pause_toggle.wav", cooldown: 6, volume: 0.55},
-		{id: sfxWin, path: "assets/sfx/win.wav", cooldown: 30, volume: 0.80},
-		{id: sfxLose, path: "assets/sfx/lose.wav", cooldown: 30, volume: 0.80},
+		{id: sfxShootPlayer, path: "assets/sfx/shoot_player.wav", cooldown: 5, volume: 0.68, group: sfxGroupCombat},
+		{id: sfxShootEnemy, path: "assets/sfx/shoot_enemy.wav", cooldown: 7, volume: 0.64, group: sfxGroupCombat},
+		{id: sfxHitWall, path: "assets/sfx/hit_wall.wav", cooldown: 3, volume: 0.56, group: sfxGroupCombat},
+		{id: sfxHitTank, path: "assets/sfx/hit_tank.wav", cooldown: 4, volume: 0.68, group: sfxGroupCombat},
+		{id: sfxHitFortress, path: "assets/sfx/hit_fortress.wav", cooldown: 5, volume: 0.74, group: sfxGroupCombat},
+		{id: sfxExplosionSmall, path: "assets/sfx/explosion_small.wav", cooldown: 5, volume: 0.66, group: sfxGroupCombat},
+		{id: sfxExplosionLarge, path: "assets/sfx/explosion_large.wav", cooldown: 9, volume: 0.84, group: sfxGroupCombat},
+		{id: sfxPowerupSpawn, path: "assets/sfx/powerup_spawn.wav", cooldown: 12, volume: 0.58, group: sfxGroupPowerup},
+		{id: sfxPowerupPickupShield, path: "assets/sfx/powerup_pickup_shield.wav", cooldown: 6, volume: 0.72, group: sfxGroupPowerup},
+		{id: sfxPowerupPickupRapid, path: "assets/sfx/powerup_pickup_rapid.wav", cooldown: 6, volume: 0.72, group: sfxGroupPowerup},
+		{id: sfxPowerupPickupRepair, path: "assets/sfx/powerup_pickup_repair.wav", cooldown: 6, volume: 0.72, group: sfxGroupPowerup},
+		{id: sfxMenuMove, path: "assets/sfx/menu_move.wav", cooldown: 2, volume: 0.50, group: sfxGroupUI},
+		{id: sfxMenuConfirm, path: "assets/sfx/menu_confirm.wav", cooldown: 3, volume: 0.62, group: sfxGroupUI},
+		{id: sfxMenuBlocked, path: "assets/sfx/menu_blocked.wav", cooldown: 4, volume: 0.56, group: sfxGroupUI},
+		{id: sfxPauseToggle, path: "assets/sfx/pause_toggle.wav", cooldown: 8, volume: 0.60, group: sfxGroupState, priority: 1},
+		{id: sfxWavePrepare, path: "assets/sfx/wave_prepare.wav", cooldown: 24, volume: 0.68, group: sfxGroupState, priority: 1},
+		{id: sfxWaveStart, path: "assets/sfx/wave_start.wav", cooldown: 24, volume: 0.74, group: sfxGroupState, priority: 1},
+		{id: sfxBuffShieldOff, path: "assets/sfx/buff_shield_off.wav", cooldown: 12, volume: 0.60, group: sfxGroupState, priority: 1},
+		{id: sfxBuffRapidOff, path: "assets/sfx/buff_rapid_off.wav", cooldown: 12, volume: 0.60, group: sfxGroupState, priority: 1},
+		{id: sfxDestroyEnemy, path: "assets/sfx/destroy_enemy.wav", cooldown: 10, volume: 0.80, group: sfxGroupCombat},
+		{id: sfxDestroyPlayer, path: "assets/sfx/destroy_player.wav", cooldown: 20, volume: 0.84, group: sfxGroupState, priority: 2},
+		{id: sfxWin, path: "assets/sfx/win.wav", cooldown: 40, volume: 0.86, group: sfxGroupState, priority: 2},
+		{id: sfxLose, path: "assets/sfx/lose.wav", cooldown: 40, volume: 0.86, group: sfxGroupState, priority: 2},
 	}
 	for _, m := range manifest {
 		raw, err := sfxFS.ReadFile(m.path)
@@ -167,6 +270,8 @@ func (a *audioManager) loadEmbeddedSFX() {
 			pcm:      pcm,
 			cooldown: m.cooldown,
 			volume:   m.volume,
+			group:    m.group,
+			priority: m.priority,
 		}
 	}
 }
@@ -175,7 +280,7 @@ func (g *game) playSFX(id sfxID) {
 	if g == nil || g.audio == nil {
 		return
 	}
-	g.audio.Play(id, g.frame)
+	g.audio.Play(id, g.audioFrame)
 }
 
 func (g *game) setSoundEnabled(enabled bool) {

@@ -8,6 +8,8 @@ import (
 )
 
 func (g *game) Update() error {
+	g.audioFrame++
+
 	if inpututil.IsKeyJustPressed(ebiten.KeyR) && g.restartIfAllowed() {
 		return nil
 	}
@@ -47,9 +49,15 @@ func (g *game) Update() error {
 	}
 	if g.shieldTick > 0 {
 		g.shieldTick--
+		if g.shieldTick == 0 {
+			g.playSFX(sfxBuffShieldOff)
+		}
 	}
 	if g.rapidTick > 0 {
 		g.rapidTick--
+		if g.rapidTick == 0 {
+			g.playSFX(sfxBuffRapidOff)
+		}
 	}
 
 	g.updatePlayer()
@@ -61,6 +69,9 @@ func (g *game) Update() error {
 	g.trySpawnRandomPowerup()
 
 	if g.fort.hp <= 0 || g.player.hp <= 0 {
+		if g.player.hp <= 0 {
+			g.playSFX(sfxDestroyPlayer)
+		}
 		g.applyDefeatEnergyState()
 		g.state = stateEnded
 		g.win = false
@@ -78,12 +89,14 @@ func (g *game) Update() error {
 				g.wave++
 				g.waveDelay = 130
 				g.setMessage(fmt.Sprintf("Prepare wave %d", g.wave), g.waveDelay)
+				g.playSFX(sfxWavePrepare)
 			}
 		} else {
 			g.waveDelay--
 			if g.waveDelay == 0 {
 				g.spawnWave(g.wave)
 				g.setMessage(fmt.Sprintf("Wave %d incoming", g.wave), 100)
+				g.playSFX(sfxWaveStart)
 			}
 		}
 	}

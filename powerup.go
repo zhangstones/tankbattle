@@ -11,13 +11,16 @@ func (g *game) updatePowerups() {
 			continue
 		}
 		if overlap(pr, p.box) {
+			pickSFX := sfxPowerupPickupRapid
 			switch p.kind {
 			case powerShield:
 				g.shieldTick = 600
 				g.setMessage("Shield online", 90)
+				pickSFX = sfxPowerupPickupShield
 			case powerRapid:
 				g.rapidTick = 600
 				g.setMessage("Rapid fire", 90)
+				pickSFX = sfxPowerupPickupRapid
 			case powerRepair:
 				g.fort.hp += 4
 				if g.fort.hp > g.fort.maxHP {
@@ -32,9 +35,10 @@ func (g *game) updatePowerups() {
 					g.player.turretHP = g.player.turretMaxHP
 				}
 				g.setMessage("Fortress & tank repaired", 90)
+				pickSFX = sfxPowerupPickupRepair
 			}
 			g.score += 80
-			g.playSFX(sfxPowerupPickup)
+			g.playSFX(pickSFX)
 			continue
 		}
 		keep = append(keep, p)

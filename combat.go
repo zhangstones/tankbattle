@@ -61,6 +61,7 @@ func (g *game) updateBullets() {
 					if e.hp <= 0 {
 						g.spawnExplosion(e.x+tankSize/2, e.y+tankSize/2, 30)
 						g.playSFX(sfxExplosionLarge)
+						g.playSFX(sfxDestroyEnemy)
 						if rand.Intn(100) < 30 {
 							g.dropPowerup(e.x+tankSize/2, e.y+tankSize/2)
 						}

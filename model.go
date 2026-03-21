@@ -168,6 +168,7 @@ type game struct {
 	win                bool
 	paused             bool
 	frame              int
+	audioFrame         int
 	wave               int
 	maxWave            int
 	waveDelay          int

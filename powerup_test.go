@@ -4,24 +4,36 @@ import "testing"
 
 func TestUpdatePowerupsShieldPickup(t *testing.T) {
 	g := newPlayingGameForTest()
+	mock := &mockSFXPlayer{enabled: true}
+	g.audio = mock
 	g.powerups = []*powerup{{kind: powerShield, box: rect{g.player.x, g.player.y, 16, 16}, life: 100}}
 	g.updatePowerups()
 	if g.shieldTick == 0 {
 		t.Fatalf("shield powerup should apply")
 	}
+	if last, ok := mock.last(); !ok || last != sfxPowerupPickupShield {
+		t.Fatalf("expected shield pickup sfx, got %v (ok=%v)", last, ok)
+	}
 }
 
 func TestUpdatePowerupsRapidPickup(t *testing.T) {
 	g := newPlayingGameForTest()
+	mock := &mockSFXPlayer{enabled: true}
+	g.audio = mock
 	g.powerups = []*powerup{{kind: powerRapid, box: rect{g.player.x, g.player.y, 16, 16}, life: 100}}
 	g.updatePowerups()
 	if g.rapidTick == 0 {
 		t.Fatalf("rapid powerup should apply")
 	}
+	if last, ok := mock.last(); !ok || last != sfxPowerupPickupRapid {
+		t.Fatalf("expected rapid pickup sfx, got %v (ok=%v)", last, ok)
+	}
 }
 
 func TestUpdatePowerupsRepairCapped(t *testing.T) {
 	g := newPlayingGameForTest()
+	mock := &mockSFXPlayer{enabled: true}
+	g.audio = mock
 	g.fort.hp = g.fort.maxHP - 1
 	g.player.hp = g.player.maxHP - 1
 	g.player.turretHP = g.player.turretMaxHP - 1
@@ -35,6 +47,9 @@ func TestUpdatePowerupsRepairCapped(t *testing.T) {
 	}
 	if g.player.turretHP != g.player.turretMaxHP {
 		t.Fatalf("repair should cap player turret hp at max")
+	}
+	if last, ok := mock.last(); !ok || last != sfxPowerupPickupRepair {
+		t.Fatalf("expected repair pickup sfx, got %v (ok=%v)", last, ok)
 	}
 }
 

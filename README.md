@@ -78,6 +78,12 @@ go build -ldflags="-H windowsgui" -o tankbattle_gui.exe .\cmd\tankbattle
 - 道具：护盾、连发、堡垒修复（随机刷新与敌人掉落）
 - 音效系统：写实风格射击/命中/爆炸/道具/UI 音效，资源通过 `embed` 打包进二进制，便于单文件分发
 - 音效设置（开关与音量）会写入 `settings.json`，下次启动自动加载
+- 音频混音采用分组与优先级策略：状态音（胜负/波次/暂停）可压低其他组，提升关键反馈清晰度
+- 新增波次状态音效：`Prepare wave` 与 `Wave incoming` 均有独立提示音
+- 新增菜单边界提示音（参数到上下限继续调节时触发）
+- 道具拾取音效按类型区分（Shield / Rapid / Repair）
+- 新增 Buff 结束音（Shield/Rapid 到期）与敌我摧毁音效区分
+- 音效冷却计时使用独立音频时钟：菜单状态与 `R` 重开后音效不会丢失
 
 ## 测试
 

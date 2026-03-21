@@ -71,42 +71,58 @@ func (g *game) applyMenuAction(action menuAction) {
 		}
 		g.playSFX(sfxMenuMove)
 	case menuDec:
+		handled := false
 		if g.menuIndex == 0 && g.difficulty > diffEasy {
 			g.difficulty--
 			g.playSFX(sfxMenuMove)
+			handled = true
 		}
 		if g.menuIndex == 1 && g.enemyBase > enemyBaseMin {
 			g.enemyBase--
 			g.playSFX(sfxMenuMove)
+			handled = true
 		}
 		if g.menuIndex == 2 {
 			g.toggleSoundEnabled()
 			g.playSFX(sfxMenuConfirm)
+			handled = true
 		}
 		if g.menuIndex == 3 {
 			changed := g.adjustSoundVolume(-25)
 			if changed {
 				g.playSFX(sfxMenuMove)
+				handled = true
 			}
 		}
+		if !handled {
+			g.playSFX(sfxMenuBlocked)
+		}
 	case menuInc:
+		handled := false
 		if g.menuIndex == 0 && g.difficulty < diffHard {
 			g.difficulty++
 			g.playSFX(sfxMenuMove)
+			handled = true
 		}
 		if g.menuIndex == 1 && g.enemyBase < enemyBaseMax {
 			g.enemyBase++
 			g.playSFX(sfxMenuMove)
+			handled = true
 		}
 		if g.menuIndex == 2 {
 			g.toggleSoundEnabled()
 			g.playSFX(sfxMenuConfirm)
+			handled = true
 		}
 		if g.menuIndex == 3 {
 			changed := g.adjustSoundVolume(25)
 			if changed {
 				g.playSFX(sfxMenuMove)
+				handled = true
 			}
+		}
+		if !handled {
+			g.playSFX(sfxMenuBlocked)
 		}
 	case menuSetEasy:
 		g.difficulty = diffEasy
@@ -121,11 +137,15 @@ func (g *game) applyMenuAction(action menuAction) {
 		if g.enemyBase > enemyBaseMin {
 			g.enemyBase--
 			g.playSFX(sfxMenuMove)
+		} else {
+			g.playSFX(sfxMenuBlocked)
 		}
 	case menuEnemyUp:
 		if g.enemyBase < enemyBaseMax {
 			g.enemyBase++
 			g.playSFX(sfxMenuMove)
+		} else {
+			g.playSFX(sfxMenuBlocked)
 		}
 	case menuStart:
 		g.playSFX(sfxMenuConfirm)

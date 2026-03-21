@@ -15,7 +15,7 @@ const (
 	playerHullMaxHP   = 5
 	playerTurretMaxHP = 5
 
-	menuItemCount = 4
+	menuItemCount = 5
 
 	enemyBaseMin = 2
 	enemyBaseMax = 8
@@ -181,6 +181,7 @@ type game struct {
 	enemyBase    int
 	menuIndex    int
 	soundEnabled bool
+	soundVolume  int
 	audio        sfxPlayer
 
 	playerTapFrame      [4]int
@@ -191,5 +192,6 @@ type game struct {
 type sfxPlayer interface {
 	Play(id sfxID, frame int)
 	SetEnabled(enabled bool)
+	SetSFXVolume(volume float64)
 	Enabled() bool
 }

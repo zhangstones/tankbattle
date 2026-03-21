@@ -81,6 +81,16 @@ func (a *audioManager) SetEnabled(enabled bool) {
 	a.enabled = enabled
 }
 
+func (a *audioManager) SetSFXVolume(volume float64) {
+	if volume < 0 {
+		volume = 0
+	}
+	if volume > 1 {
+		volume = 1
+	}
+	a.sfxVolume = volume
+}
+
 func (a *audioManager) Play(id sfxID, frame int) {
 	if a == nil || !a.enabled || a.ctx == nil {
 		return
@@ -173,8 +183,27 @@ func (g *game) setSoundEnabled(enabled bool) {
 	if g.audio != nil {
 		g.audio.SetEnabled(enabled)
 	}
+	g.saveUserSettings()
 }
 
 func (g *game) toggleSoundEnabled() {
 	g.setSoundEnabled(!g.soundEnabled)
+}
+
+func (g *game) setSoundVolumePercent(percent int) {
+	percent = clampInt(percent, 0, 100)
+	g.soundVolume = percent
+	if g.audio != nil {
+		g.audio.SetSFXVolume(float64(percent) / 100.0)
+	}
+	g.saveUserSettings()
+}
+
+func (g *game) adjustSoundVolume(delta int) bool {
+	next := clampInt(g.soundVolume+delta, 0, 100)
+	if next == g.soundVolume {
+		return false
+	}
+	g.setSoundVolumePercent(next)
+	return true
 }

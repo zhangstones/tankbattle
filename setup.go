@@ -22,9 +22,10 @@ func newGame() *game {
 		enemyBase:    3,
 		menuIndex:    0,
 		soundEnabled: true,
+		soundVolume:  75,
 	}
 	g.audio = newAudioManager()
-	g.setSoundEnabled(true)
+	g.loadUserSettings()
 	return g
 }
 

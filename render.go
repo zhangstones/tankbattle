@@ -114,17 +114,19 @@ func drawMenu(screen *ebiten.Image, g *game) {
 		"Difficulty: " + diffText,
 		fmt.Sprintf("Enemy Count / Wave: %d", g.enemyBase),
 		fmt.Sprintf("Sound Effects: %s", onOffText(g.soundEnabled)),
+		fmt.Sprintf("SFX Volume: %d%%", g.soundVolume),
 		"Start Mission",
 	}
 	descs := []string{
 		diffDesc,
 		"How many tanks appear each wave.",
 		"Toggle all in-game sound effects.",
+		"Adjust effect volume in 25% steps.",
 		"Start with current settings.",
 	}
 
 	for i := 0; i < len(titles); i++ {
-		y := 274 + i*62
+		y := 268 + i*56
 		bg := color.RGBA{20, 34, 40, 180}
 		if g.menuIndex == i {
 			bg = color.RGBA{72, 138, 100, 170}

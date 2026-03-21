@@ -101,3 +101,27 @@ func TestMenuSoundToggle(t *testing.T) {
 		t.Fatalf("audio manager should sync enabled state")
 	}
 }
+
+func TestMenuSoundVolumeBounds(t *testing.T) {
+	g := newGame()
+	g.menuIndex = 3
+	g.soundVolume = 100
+	g.applyMenuAction(menuInc)
+	if g.soundVolume != 100 {
+		t.Fatalf("volume should stay capped at 100, got %d", g.soundVolume)
+	}
+	g.soundVolume = 0
+	g.applyMenuAction(menuDec)
+	if g.soundVolume != 0 {
+		t.Fatalf("volume should stay at lower bound 0, got %d", g.soundVolume)
+	}
+	g.soundVolume = 50
+	g.applyMenuAction(menuInc)
+	if g.soundVolume != 75 {
+		t.Fatalf("volume should increase by 25, got %d", g.soundVolume)
+	}
+	g.applyMenuAction(menuDec)
+	if g.soundVolume != 50 {
+		t.Fatalf("volume should decrease by 25, got %d", g.soundVolume)
+	}
+}

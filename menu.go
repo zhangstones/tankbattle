@@ -46,7 +46,7 @@ func (g *game) updateMenu() {
 		g.applyMenuAction(menuStart)
 	}
 
-	if g.menuIndex == 0 || g.menuIndex == 1 || g.menuIndex == 2 {
+	if g.menuIndex == 0 || g.menuIndex == 1 || g.menuIndex == 2 || g.menuIndex == 3 {
 		if inpututil.IsKeyJustPressed(ebiten.KeyArrowLeft) || inpututil.IsKeyJustPressed(ebiten.KeyA) {
 			g.applyMenuAction(menuDec)
 		}
@@ -83,6 +83,12 @@ func (g *game) applyMenuAction(action menuAction) {
 			g.toggleSoundEnabled()
 			g.playSFX(sfxMenuConfirm)
 		}
+		if g.menuIndex == 3 {
+			changed := g.adjustSoundVolume(-25)
+			if changed {
+				g.playSFX(sfxMenuMove)
+			}
+		}
 	case menuInc:
 		if g.menuIndex == 0 && g.difficulty < diffHard {
 			g.difficulty++
@@ -95,6 +101,12 @@ func (g *game) applyMenuAction(action menuAction) {
 		if g.menuIndex == 2 {
 			g.toggleSoundEnabled()
 			g.playSFX(sfxMenuConfirm)
+		}
+		if g.menuIndex == 3 {
+			changed := g.adjustSoundVolume(25)
+			if changed {
+				g.playSFX(sfxMenuMove)
+			}
 		}
 	case menuSetEasy:
 		g.difficulty = diffEasy

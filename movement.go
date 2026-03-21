@@ -15,16 +15,20 @@ func (g *game) updatePlayer() {
 	g.handlePlayerTurnInput()
 
 	dx, dy := 0.0, 0.0
-	if ebiten.IsKeyPressed(ebiten.KeyW) || ebiten.IsKeyPressed(ebiten.KeyArrowUp) {
+	w := ebiten.IsKeyPressed(ebiten.KeyW)
+	s := ebiten.IsKeyPressed(ebiten.KeyS)
+	a := ebiten.IsKeyPressed(ebiten.KeyA)
+	d := ebiten.IsKeyPressed(ebiten.KeyD)
+	if g.canMoveOnHeld(up, w) {
 		dy = -g.player.speed
 	}
-	if ebiten.IsKeyPressed(ebiten.KeyS) || ebiten.IsKeyPressed(ebiten.KeyArrowDown) {
+	if g.canMoveOnHeld(down, s) {
 		dy = g.player.speed
 	}
-	if ebiten.IsKeyPressed(ebiten.KeyA) || ebiten.IsKeyPressed(ebiten.KeyArrowLeft) {
+	if g.canMoveOnHeld(left, a) {
 		dx = -g.player.speed
 	}
-	if ebiten.IsKeyPressed(ebiten.KeyD) || ebiten.IsKeyPressed(ebiten.KeyArrowRight) {
+	if g.canMoveOnHeld(right, d) {
 		dx = g.player.speed
 	}
 	g.tryMoveTank(&g.player, dx, dy)
@@ -41,16 +45,16 @@ func (g *game) updatePlayer() {
 }
 
 func (g *game) handlePlayerTurnInput() {
-	if inpututil.IsKeyJustPressed(ebiten.KeyW) || inpututil.IsKeyJustPressed(ebiten.KeyArrowUp) {
+	if inpututil.IsKeyJustPressed(ebiten.KeyW) {
 		g.onPlayerDirTap(up)
 	}
-	if inpututil.IsKeyJustPressed(ebiten.KeyS) || inpututil.IsKeyJustPressed(ebiten.KeyArrowDown) {
+	if inpututil.IsKeyJustPressed(ebiten.KeyS) {
 		g.onPlayerDirTap(down)
 	}
-	if inpututil.IsKeyJustPressed(ebiten.KeyA) || inpututil.IsKeyJustPressed(ebiten.KeyArrowLeft) {
+	if inpututil.IsKeyJustPressed(ebiten.KeyA) {
 		g.onPlayerDirTap(left)
 	}
-	if inpututil.IsKeyJustPressed(ebiten.KeyD) || inpututil.IsKeyJustPressed(ebiten.KeyArrowRight) {
+	if inpututil.IsKeyJustPressed(ebiten.KeyD) {
 		g.onPlayerDirTap(right)
 	}
 }
@@ -63,7 +67,39 @@ func (g *game) onPlayerDirTap(d direction) bool {
 	}
 	g.player.dir = d
 	g.player.turret = d
+	g.playerMoveLockUntil = g.frame + playerTurnMoveLockFrames
+	g.playerPressStart[d] = g.frame
 	return true
+}
+
+func (g *game) canMoveOnHeld(d direction, pressed bool) bool {
+	if !pressed {
+		g.playerPressStart[d] = -9999
+		return false
+	}
+	if inpututil.IsKeyJustPressed(keyFromDirection(d)) {
+		g.playerPressStart[d] = g.frame
+	}
+	if g.playerPressStart[d] < -9000 {
+		g.playerPressStart[d] = g.frame
+	}
+	if g.frame < g.playerMoveLockUntil {
+		return false
+	}
+	return g.frame-g.playerPressStart[d] >= playerTapGraceFrames
+}
+
+func keyFromDirection(d direction) ebiten.Key {
+	switch d {
+	case up:
+		return ebiten.KeyW
+	case down:
+		return ebiten.KeyS
+	case left:
+		return ebiten.KeyA
+	default:
+		return ebiten.KeyD
+	}
 }
 
 func (g *game) updateEnemies() {

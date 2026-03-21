@@ -31,9 +31,8 @@ go build -ldflags="-H windowsgui" -o tankbattle_gui.exe .\cmd\tankbattle
 
 ## 操作说明
 
-- `WASD` / `方向键`：移动
 - `WASD` 长按：平移移动（不自动转向）
-- `WASD` / `方向键` 双击同方向：转向并同步炮塔朝向
+- `WASD` 双击同方向：转向并同步炮塔朝向
 - `J` / `Space`：开火
 - `P`：暂停 / 继续
 - `M`：返回主菜单

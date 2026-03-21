@@ -22,7 +22,9 @@ const (
 	fortHitLoss   = 3
 	fortHitDamage = 3
 
-	playerTurnDoubleTapFrames = 14
+	playerTurnDoubleTapFrames = 16
+	playerTapGraceFrames      = 5
+	playerTurnMoveLockFrames  = 3
 )
 
 type direction int
@@ -168,5 +170,7 @@ type game struct {
 	enemyBase  int
 	menuIndex  int
 
-	playerTapFrame [4]int
+	playerTapFrame      [4]int
+	playerPressStart    [4]int
+	playerMoveLockUntil int
 }

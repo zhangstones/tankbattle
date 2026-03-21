@@ -60,7 +60,9 @@ func (g *game) startMatch() {
 func (g *game) resetPlayerTapFrames() {
 	for i := range g.playerTapFrame {
 		g.playerTapFrame[i] = -9999
+		g.playerPressStart[i] = -9999
 	}
+	g.playerMoveLockUntil = 0
 }
 
 func (g *game) maxWaveByDifficulty() int {

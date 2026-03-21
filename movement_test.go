@@ -356,6 +356,40 @@ func TestOnPlayerDirTapOutsideWindowDoesNotTurn(t *testing.T) {
 	}
 }
 
+func TestOnPlayerDirTapSetsMoveLock(t *testing.T) {
+	g := newPlayingGameForTest()
+	g.frame = 40
+	g.onPlayerDirTap(up)
+	g.frame = 50
+	if !g.onPlayerDirTap(up) {
+		t.Fatalf("expected second tap to trigger turn")
+	}
+	if g.playerMoveLockUntil != g.frame+playerTurnMoveLockFrames {
+		t.Fatalf("move lock mismatch: got %d", g.playerMoveLockUntil)
+	}
+}
+
+func TestCanMoveOnHeldRespectsGraceAndMoveLock(t *testing.T) {
+	g := newPlayingGameForTest()
+	g.playerPressStart[up] = 10
+
+	g.frame = 13
+	if g.canMoveOnHeld(up, true) {
+		t.Fatalf("should not move before tap grace")
+	}
+
+	g.frame = 20
+	g.playerMoveLockUntil = 25
+	if g.canMoveOnHeld(up, true) {
+		t.Fatalf("should not move while turn move lock is active")
+	}
+
+	g.frame = 26
+	if !g.canMoveOnHeld(up, true) {
+		t.Fatalf("should move after grace and lock window")
+	}
+}
+
 func TestSingleEnemySilenceEventuallyDamagesFortress(t *testing.T) {
 	rand.Seed(5)
 	g := newPlayingGameForTest()

@@ -141,8 +141,6 @@ func drawHUD(screen *ebiten.Image, g *game) {
 	ebitenutil.DebugPrintAt(screen, line1, 24, 22)
 	ebitenutil.DebugPrintAt(screen, line2, 24, 44)
 	ebitenutil.DebugPrintAt(screen, line3, 24, 66)
-	drawEnergyBar(screen, 24, 92, float64(panelW-150), 12, float64(g.player.hp)/float64(maxInt(g.player.maxHP, 1)), color.RGBA{88, 210, 128, 240}, "HULL")
-	drawEnergyBar(screen, 24, 112, float64(panelW-150), 12, float64(g.player.turretHP)/float64(maxInt(g.player.turretMaxHP, 1)), color.RGBA{242, 184, 88, 240}, "TURRET")
 	ebitenutil.DebugPrintAt(screen, playerEnergySummary(g.player), panelW-178, 102)
 
 	if g.shieldTick > 0 {
@@ -166,6 +164,12 @@ func drawHUD(screen *ebiten.Image, g *game) {
 	}
 	ebitenutil.DrawRect(screen, barX+1, barY+1, (barW-2)*rate, barH-2, fill)
 	ebitenutil.DebugPrintAt(screen, fmt.Sprintf("%d/%d", g.fort.hp, g.fort.maxHP), int(barX)+int(barW)+8, int(barY)-1)
+
+	tankY := barY + 34
+	tankNow, tankMax := playerCombinedEnergy(g.player)
+	tankRate := float64(tankNow) / float64(maxInt(tankMax, 1))
+	drawEnergyBar(screen, barX, tankY, barW, barH, tankRate, color.RGBA{88, 210, 128, 240}, "TANK")
+	ebitenutil.DebugPrintAt(screen, fmt.Sprintf("%d/%d", tankNow, tankMax), int(barX)+int(barW)+8, int(tankY)-1)
 }
 
 func drawEnergyBar(screen *ebiten.Image, x, y, w, h, rate float64, fill color.Color, label string) {
@@ -182,6 +186,12 @@ func drawEnergyBar(screen *ebiten.Image, x, y, w, h, rate float64, fill color.Co
 
 func playerEnergySummary(p tank) string {
 	return fmt.Sprintf("H:%d/%d  T:%d/%d", p.hp, maxInt(p.maxHP, 1), p.turretHP, maxInt(p.turretMaxHP, 1))
+}
+
+func playerCombinedEnergy(p tank) (int, int) {
+	now := maxInt(p.hp, 0) + maxInt(p.turretHP, 0)
+	max := maxInt(p.maxHP, 1) + maxInt(p.turretMaxHP, 1)
+	return now, max
 }
 
 func drawBackground(screen *ebiten.Image) {

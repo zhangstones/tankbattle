@@ -10,8 +10,10 @@ import (
 )
 
 const (
-	hudTopY      = 10
-	hudHeight    = 132
+	hudTopY       = 10
+	hudHeight     = 132
+	hudFrameInset = 2
+	statusInset   = 2
 	hudMessageGap = 12
 )
 
@@ -69,12 +71,12 @@ func (g *game) Draw(screen *ebiten.Image) {
 	if g.msg != "" {
 		msgY := messageBoxTopY()
 		ebitenutil.DrawRect(screen, screenW/2-160, float64(msgY), 320, 34, color.RGBA{8, 14, 18, 220})
-		ebitenutil.DrawRect(screen, screenW/2-156, float64(msgY+4), 312, 26, color.RGBA{44, 104, 118, 120})
+		ebitenutil.DrawRect(screen, screenW/2-160+statusInset, float64(msgY+statusInset), 320-statusInset*2, 34-statusInset*2, color.RGBA{44, 104, 118, 120})
 		ebitenutil.DebugPrintAt(screen, g.msg, screenW/2-58, msgY+12)
 	}
 	if g.paused {
 		ebitenutil.DrawRect(screen, screenW/2-98, screenH/2-24, 196, 48, color.RGBA{10, 15, 20, 220})
-		ebitenutil.DrawRect(screen, screenW/2-94, screenH/2-20, 188, 40, color.RGBA{58, 74, 92, 120})
+		ebitenutil.DrawRect(screen, screenW/2-98+statusInset, screenH/2-24+statusInset, 196-statusInset*2, 48-statusInset*2, color.RGBA{58, 74, 92, 120})
 		ebitenutil.DebugPrintAt(screen, "Paused [P] Resume", screenW/2-54, screenH/2-4)
 	}
 	if g.state == stateEnded {
@@ -144,7 +146,7 @@ func drawHUD(screen *ebiten.Image, g *game) {
 	badgeX := panelW - 96
 
 	ebitenutil.DrawRect(screen, 10, hudTopY, float64(panelW), hudHeight, color.RGBA{8, 16, 22, 220})
-	ebitenutil.DrawRect(screen, 14, 14, float64(panelW-8), 124, color.RGBA{40, 86, 96, 135})
+	ebitenutil.DrawRect(screen, 10+float64(hudFrameInset), hudTopY+float64(hudFrameInset), float64(panelW-hudFrameInset*2), hudHeight-float64(hudFrameInset*2), color.RGBA{40, 86, 96, 135})
 	ebitenutil.DebugPrintAt(screen, line1, 24, 22)
 	ebitenutil.DebugPrintAt(screen, line2, 24, 44)
 	ebitenutil.DebugPrintAt(screen, line3, 24, 66)

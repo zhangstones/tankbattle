@@ -29,3 +29,12 @@ func TestMessageBoxAvoidsHUD(t *testing.T) {
 		t.Fatalf("message box should be below HUD: msgTop=%d hudBottom=%d", messageBoxTopY(), hudBottomY())
 	}
 }
+
+func TestHUDAndStatusUseThinFrame(t *testing.T) {
+	if hudFrameInset > 2 {
+		t.Fatalf("HUD frame should be thin, got inset=%d", hudFrameInset)
+	}
+	if statusInset > 2 {
+		t.Fatalf("status frame should be thin, got inset=%d", statusInset)
+	}
+}

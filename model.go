@@ -15,7 +15,7 @@ const (
 	playerHullMaxHP   = 5
 	playerTurretMaxHP = 5
 
-	menuItemCount = 3
+	menuItemCount = 4
 
 	enemyBaseMin = 2
 	enemyBaseMax = 8
@@ -98,28 +98,28 @@ type fortress struct {
 }
 
 type tank struct {
-	x        float64
-	y        float64
-	dir      direction
-	turret   direction
-	speed    float64
-	cooldown int
+	x           float64
+	y           float64
+	dir         direction
+	turret      direction
+	speed       float64
+	cooldown    int
 	maxHP       int
 	turretHP    int
 	turretMaxHP int
-	turnLock int
-	turnWant direction
-	turnVote int
-	hp       int
-	isPlayer bool
-	aiTick   int
-	age      int
-	aiRand   float64
-	replan   int
-	fireBias int
-	aggro    float64
-	role     enemyRole
-	stuck    int
+	turnLock    int
+	turnWant    direction
+	turnVote    int
+	hp          int
+	isPlayer    bool
+	aiTick      int
+	age         int
+	aiRand      float64
+	replan      int
+	fireBias    int
+	aggro       float64
+	role        enemyRole
+	stuck       int
 }
 
 type bullet struct {
@@ -177,11 +177,19 @@ type game struct {
 	rapidTick          int
 	playerSilentFrames int
 
-	difficulty difficulty
-	enemyBase  int
-	menuIndex  int
+	difficulty   difficulty
+	enemyBase    int
+	menuIndex    int
+	soundEnabled bool
+	audio        sfxPlayer
 
 	playerTapFrame      [4]int
 	playerPressStart    [4]int
 	playerMoveLockUntil int
+}
+
+type sfxPlayer interface {
+	Play(id sfxID, frame int)
+	SetEnabled(enabled bool)
+	Enabled() bool
 }

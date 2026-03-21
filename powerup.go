@@ -34,6 +34,7 @@ func (g *game) updatePowerups() {
 				g.setMessage("Fortress & tank repaired", 90)
 			}
 			g.score += 80
+			g.playSFX(sfxPowerupPickup)
 			continue
 		}
 		keep = append(keep, p)
@@ -53,6 +54,7 @@ func (g *game) trySpawnRandomPowerup() {
 	}
 	kind := powerupKind(rand.Intn(3))
 	g.powerups = append(g.powerups, &powerup{kind: kind, box: box, life: 1200})
+	g.playSFX(sfxPowerupSpawn)
 }
 
 func (g *game) dropPowerup(x, y float64) {
@@ -67,6 +69,7 @@ func (g *game) dropPowerup(x, y float64) {
 		kind = powerRepair
 	}
 	g.powerups = append(g.powerups, &powerup{kind: kind, box: rect{x: x - powerupSize/2, y: y - powerupSize/2, w: powerupSize, h: powerupSize}, life: 900})
+	g.playSFX(sfxPowerupSpawn)
 }
 
 func (g *game) canPlacePowerup(box rect) bool {

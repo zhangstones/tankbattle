@@ -25,6 +25,8 @@ func (g *game) updateBullets() {
 					g.score = maxInt(0, g.score-guardHitLoss)
 				}
 				g.spawnExplosion(b.x, b.y, 14)
+				g.playSFX(sfxHitWall)
+				g.playSFX(sfxExplosionSmall)
 				break
 			}
 		}
@@ -42,6 +44,8 @@ func (g *game) updateBullets() {
 			}
 			b.alive = false
 			g.spawnExplosion(b.x, b.y, 22)
+			g.playSFX(sfxHitFortress)
+			g.playSFX(sfxExplosionLarge)
 			continue
 		}
 
@@ -52,8 +56,11 @@ func (g *game) updateBullets() {
 					b.alive = false
 					e.hp -= b.dmg
 					g.spawnExplosion(b.x, b.y, 18)
+					g.playSFX(sfxHitTank)
+					g.playSFX(sfxExplosionSmall)
 					if e.hp <= 0 {
 						g.spawnExplosion(e.x+tankSize/2, e.y+tankSize/2, 30)
+						g.playSFX(sfxExplosionLarge)
 						if rand.Intn(100) < 30 {
 							g.dropPowerup(e.x+tankSize/2, e.y+tankSize/2)
 						}
@@ -69,6 +76,7 @@ func (g *game) updateBullets() {
 			b.alive = false
 			if g.shieldTick > 0 {
 				g.spawnExplosion(g.player.x+tankSize/2, g.player.y+tankSize/2, 12)
+				g.playSFX(sfxHitWall)
 			} else {
 				g.player.hp -= b.dmg
 				g.player.turretHP -= b.dmg
@@ -76,6 +84,8 @@ func (g *game) updateBullets() {
 					g.player.turretHP = 0
 				}
 				g.spawnExplosion(b.x, b.y, 20)
+				g.playSFX(sfxHitTank)
+				g.playSFX(sfxExplosionSmall)
 			}
 		}
 	}
@@ -116,4 +126,9 @@ func (g *game) fire(t *tank, fromPlayer bool) {
 		bx = t.x + tankSize
 	}
 	g.bullets = append(g.bullets, &bullet{x: bx, y: by, vx: vx, vy: vy, fromPlayer: fromPlayer, alive: true, dmg: 1})
+	if fromPlayer {
+		g.playSFX(sfxShootPlayer)
+	} else {
+		g.playSFX(sfxShootEnemy)
+	}
 }

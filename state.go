@@ -18,12 +18,14 @@ func (g *game) Update() error {
 		return nil
 	case stateEnded:
 		if inpututil.IsKeyJustPressed(ebiten.KeyM) {
+			g.playSFX(sfxMenuConfirm)
 			g.returnToMenu()
 		}
 		return nil
 	}
 
 	if inpututil.IsKeyJustPressed(ebiten.KeyM) {
+		g.playSFX(sfxMenuConfirm)
 		g.returnToMenu()
 		return nil
 	}
@@ -62,6 +64,7 @@ func (g *game) Update() error {
 		g.applyDefeatEnergyState()
 		g.state = stateEnded
 		g.win = false
+		g.playSFX(sfxLose)
 		return nil
 	}
 
@@ -70,6 +73,7 @@ func (g *game) Update() error {
 			if g.wave >= g.maxWave {
 				g.state = stateEnded
 				g.win = true
+				g.playSFX(sfxWin)
 			} else {
 				g.wave++
 				g.waveDelay = 130
@@ -101,6 +105,7 @@ func (g *game) returnToMenu() {
 
 func (g *game) togglePause() {
 	g.paused = !g.paused
+	g.playSFX(sfxPauseToggle)
 	if g.paused {
 		g.setMessage("Paused", 999999)
 		return

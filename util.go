@@ -30,6 +30,13 @@ func overlap(a, b rect) bool {
 	return a.x < b.x+b.w && a.x+a.w > b.x && a.y < b.y+b.h && a.y+a.h > b.y
 }
 
+func onOffText(on bool) string {
+	if on {
+		return "ON"
+	}
+	return "OFF"
+}
+
 func (g *game) setMessage(s string, tick int) {
 	g.msg = s
 	g.msgTick = tick

@@ -46,7 +46,7 @@ func (g *game) updateMenu() {
 		g.applyMenuAction(menuStart)
 	}
 
-	if g.menuIndex == 0 || g.menuIndex == 1 {
+	if g.menuIndex == 0 || g.menuIndex == 1 || g.menuIndex == 2 {
 		if inpututil.IsKeyJustPressed(ebiten.KeyArrowLeft) || inpututil.IsKeyJustPressed(ebiten.KeyA) {
 			g.applyMenuAction(menuDec)
 		}
@@ -63,40 +63,60 @@ func (g *game) applyMenuAction(action menuAction) {
 		if g.menuIndex < 0 {
 			g.menuIndex = menuItemCount - 1
 		}
+		g.playSFX(sfxMenuMove)
 	case menuNavDown:
 		g.menuIndex++
 		if g.menuIndex >= menuItemCount {
 			g.menuIndex = 0
 		}
+		g.playSFX(sfxMenuMove)
 	case menuDec:
 		if g.menuIndex == 0 && g.difficulty > diffEasy {
 			g.difficulty--
+			g.playSFX(sfxMenuMove)
 		}
 		if g.menuIndex == 1 && g.enemyBase > enemyBaseMin {
 			g.enemyBase--
+			g.playSFX(sfxMenuMove)
+		}
+		if g.menuIndex == 2 {
+			g.toggleSoundEnabled()
+			g.playSFX(sfxMenuConfirm)
 		}
 	case menuInc:
 		if g.menuIndex == 0 && g.difficulty < diffHard {
 			g.difficulty++
+			g.playSFX(sfxMenuMove)
 		}
 		if g.menuIndex == 1 && g.enemyBase < enemyBaseMax {
 			g.enemyBase++
+			g.playSFX(sfxMenuMove)
+		}
+		if g.menuIndex == 2 {
+			g.toggleSoundEnabled()
+			g.playSFX(sfxMenuConfirm)
 		}
 	case menuSetEasy:
 		g.difficulty = diffEasy
+		g.playSFX(sfxMenuConfirm)
 	case menuSetNormal:
 		g.difficulty = diffNormal
+		g.playSFX(sfxMenuConfirm)
 	case menuSetHard:
 		g.difficulty = diffHard
+		g.playSFX(sfxMenuConfirm)
 	case menuEnemyDown:
 		if g.enemyBase > enemyBaseMin {
 			g.enemyBase--
+			g.playSFX(sfxMenuMove)
 		}
 	case menuEnemyUp:
 		if g.enemyBase < enemyBaseMax {
 			g.enemyBase++
+			g.playSFX(sfxMenuMove)
 		}
 	case menuStart:
+		g.playSFX(sfxMenuConfirm)
 		g.startMatch()
 	}
 }

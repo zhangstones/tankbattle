@@ -95,7 +95,7 @@ func drawMenu(screen *ebiten.Image, g *game) {
 	ebitenutil.DrawRect(screen, 136, 86, 688, 468, color.RGBA{30, 64, 74, 130})
 	ebitenutil.DrawRect(screen, 164, 116, 632, 62, color.RGBA{16, 92, 90, 120})
 	ebitenutil.DebugPrintAt(screen, "TANK BATTLE // MISSION SETTINGS", 320, 140)
-	ebitenutil.DebugPrintAt(screen, "UP/DOWN select, LEFT/RIGHT modify, ENTER start", 250, 198)
+	ebitenutil.DebugPrintAt(screen, "UP/DOWN select, LEFT/RIGHT modify/toggle, ENTER start", 216, 198)
 	ebitenutil.DebugPrintAt(screen, "Shortcuts: 1/2/3 difficulty, +/- enemy amount", 272, 218)
 	ebitenutil.DebugPrintAt(screen, "Combat: hold WASD/Arrow strafe, double-tap WASD/Arrow turn", 188, 238)
 	ebitenutil.DebugPrintAt(screen, "Fire J/Space", 420, 256)
@@ -113,16 +113,18 @@ func drawMenu(screen *ebiten.Image, g *game) {
 	titles := []string{
 		"Difficulty: " + diffText,
 		fmt.Sprintf("Enemy Count / Wave: %d", g.enemyBase),
+		fmt.Sprintf("Sound Effects: %s", onOffText(g.soundEnabled)),
 		"Start Mission",
 	}
 	descs := []string{
 		diffDesc,
 		"How many tanks appear each wave.",
+		"Toggle all in-game sound effects.",
 		"Start with current settings.",
 	}
 
 	for i := 0; i < len(titles); i++ {
-		y := 286 + i*74
+		y := 274 + i*62
 		bg := color.RGBA{20, 34, 40, 180}
 		if g.menuIndex == i {
 			bg = color.RGBA{72, 138, 100, 170}

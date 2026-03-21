@@ -79,3 +79,25 @@ func TestApplyMenuEnemyShortcutBounds(t *testing.T) {
 		t.Fatalf("enemy upper bound broken")
 	}
 }
+
+func TestMenuSoundToggle(t *testing.T) {
+	g := newGame()
+	if !g.soundEnabled {
+		t.Fatalf("sound should be enabled by default")
+	}
+	g.menuIndex = 2
+	g.applyMenuAction(menuInc)
+	if g.soundEnabled {
+		t.Fatalf("sound should toggle off")
+	}
+	if g.audio == nil || g.audio.Enabled() {
+		t.Fatalf("audio manager should sync disabled state")
+	}
+	g.applyMenuAction(menuDec)
+	if !g.soundEnabled {
+		t.Fatalf("sound should toggle on")
+	}
+	if g.audio == nil || !g.audio.Enabled() {
+		t.Fatalf("audio manager should sync enabled state")
+	}
+}

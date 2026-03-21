@@ -45,6 +45,7 @@ go build -ldflags="-H windowsgui" -o tankbattle_gui.exe .\cmd\tankbattle
 - `Enter` / `Space`：开始游戏
 - `1/2/3`：快捷设置难度
 - `+/-`：快捷调整每波敌人数
+- 菜单中的 `Sound Effects` 项可通过 `←/→` 开关音效
 
 ## 当前功能
 
@@ -70,6 +71,7 @@ go build -ldflags="-H windowsgui" -o tankbattle_gui.exe .\cmd\tankbattle
 - 可破坏墙、不可破坏墙、堡垒耐久条
 - 屏幕尺寸与网格线保持整数倍关系，堡垒对齐网格且距离底部 1 个网格
 - 道具：护盾、连发、堡垒修复（随机刷新与敌人掉落）
+- 音效系统：写实风格射击/命中/爆炸/道具/UI 音效，资源通过 `embed` 打包进二进制，便于单文件分发
 
 ## 测试
 

@@ -17,11 +17,14 @@ func newGame() *game {
 		rand.Seed(seed)
 	})
 	g := &game{
-		state:      stateMenu,
-		difficulty: diffNormal,
-		enemyBase:  3,
-		menuIndex:  0,
+		state:        stateMenu,
+		difficulty:   diffNormal,
+		enemyBase:    3,
+		menuIndex:    0,
+		soundEnabled: true,
 	}
+	g.audio = newAudioManager()
+	g.setSoundEnabled(true)
 	return g
 }
 

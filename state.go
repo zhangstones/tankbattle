@@ -134,7 +134,11 @@ func (g *game) spawnExplosion(x, y, radius float64) {
 }
 
 func (g *game) applyDefeatEnergyState() {
-	g.fort.hp = 0
-	g.player.hp = 0
-	g.player.turretHP = 0
+	if g.fort.hp <= 0 {
+		g.fort.hp = 0
+	}
+	if g.player.hp <= 0 {
+		g.player.hp = 0
+		g.player.turretHP = 0
+	}
 }

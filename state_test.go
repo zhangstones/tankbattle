@@ -43,6 +43,8 @@ func TestFunctionalVictoryTransition(t *testing.T) {
 
 func TestUpdateDefeatWhenFortressDestroyed(t *testing.T) {
 	g := newPlayingGameForTest()
+	initialPlayerHP := g.player.hp
+	initialTurretHP := g.player.turretHP
 	g.fort.hp = 0
 	if err := g.Update(); err != nil {
 		t.Fatalf("Update error: %v", err)
@@ -50,13 +52,17 @@ func TestUpdateDefeatWhenFortressDestroyed(t *testing.T) {
 	if g.state != stateEnded || g.win {
 		t.Fatalf("expected defeat end state")
 	}
-	if g.fort.hp != 0 || g.player.hp != 0 || g.player.turretHP != 0 {
-		t.Fatalf("defeat should clamp fortress and tank energies to zero")
+	if g.fort.hp != 0 {
+		t.Fatalf("fortress hp should clamp to zero on fortress defeat")
+	}
+	if g.player.hp != initialPlayerHP || g.player.turretHP != initialTurretHP {
+		t.Fatalf("tank energy should remain unchanged on fortress-only defeat")
 	}
 }
 
 func TestUpdateDefeatWhenPlayerDestroyed(t *testing.T) {
 	g := newPlayingGameForTest()
+	initialFortHP := g.fort.hp
 	g.player.hp = 0
 	if err := g.Update(); err != nil {
 		t.Fatalf("Update error: %v", err)
@@ -64,8 +70,11 @@ func TestUpdateDefeatWhenPlayerDestroyed(t *testing.T) {
 	if g.state != stateEnded || g.win {
 		t.Fatalf("expected defeat end state")
 	}
-	if g.fort.hp != 0 || g.player.hp != 0 || g.player.turretHP != 0 {
-		t.Fatalf("defeat should clamp fortress and tank energies to zero")
+	if g.player.hp != 0 || g.player.turretHP != 0 {
+		t.Fatalf("tank energy should clamp to zero on player defeat")
+	}
+	if g.fort.hp != initialFortHP {
+		t.Fatalf("fortress hp should remain unchanged on player-only defeat")
 	}
 }
 

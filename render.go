@@ -152,7 +152,8 @@ func drawHUD(screen *ebiten.Image, g *game) {
 	}
 
 	barX, barY, barW, barH := 700.0, 30.0, 180.0, 12.0
-	defeatAlert := g.state == stateEnded && !g.win
+	isDefeat := g.state == stateEnded && !g.win
+	fortAlert := isDefeat && g.fort.hp <= 0
 	ebitenutil.DebugPrintAt(screen, "FORTRESS", int(barX), int(barY)-16)
 	rate := float64(g.fort.hp) / float64(g.fort.maxHP)
 	if rate < 0 {
@@ -162,16 +163,17 @@ func drawHUD(screen *ebiten.Image, g *game) {
 	if rate < 0.45 {
 		fortFill = color.RGBA{240, 96, 74, 240}
 	}
-	if defeatAlert {
+	if fortAlert {
 		fortFill = color.RGBA{255, 72, 72, 240}
 	}
-	drawEnergyBar(screen, barX, barY, barW, barH, rate, fortFill, "", defeatAlert)
+	drawEnergyBar(screen, barX, barY, barW, barH, rate, fortFill, "", fortAlert)
 	ebitenutil.DebugPrintAt(screen, fmt.Sprintf("%d/%d", g.fort.hp, g.fort.maxHP), int(barX)+int(barW)+8, int(barY)-1)
 
 	tankY := barY + 34
 	tankNow, tankMax := playerCombinedEnergy(g.player)
 	tankRate := float64(tankNow) / float64(maxInt(tankMax, 1))
-	drawEnergyBar(screen, barX, tankY, barW, barH, tankRate, color.RGBA{88, 210, 128, 240}, "TANK", defeatAlert)
+	tankAlert := isDefeat && tankNow <= 0
+	drawEnergyBar(screen, barX, tankY, barW, barH, tankRate, color.RGBA{88, 210, 128, 240}, "TANK", tankAlert)
 	ebitenutil.DebugPrintAt(screen, fmt.Sprintf("%d/%d", tankNow, tankMax), int(barX)+int(barW)+8, int(tankY)-1)
 }
 

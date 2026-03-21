@@ -88,7 +88,8 @@ func drawMenu(screen *ebiten.Image, g *game) {
 	ebitenutil.DebugPrintAt(screen, "TANK BATTLE // MISSION SETTINGS", 320, 140)
 	ebitenutil.DebugPrintAt(screen, "UP/DOWN select, LEFT/RIGHT modify, ENTER start", 250, 198)
 	ebitenutil.DebugPrintAt(screen, "Shortcuts: 1/2/3 difficulty, +/- enemy amount", 272, 218)
-	ebitenutil.DebugPrintAt(screen, "Combat: hold WASD strafe, double-tap WASD turn, fire J/Space", 210, 238)
+	ebitenutil.DebugPrintAt(screen, "Combat: hold WASD/Arrow strafe, double-tap WASD/Arrow turn", 188, 238)
+	ebitenutil.DebugPrintAt(screen, "Fire J/Space", 420, 256)
 
 	diffText := "Normal"
 	diffDesc := "Balanced speed and enemy fire rate."
@@ -128,7 +129,7 @@ func drawMenu(screen *ebiten.Image, g *game) {
 
 func drawHUD(screen *ebiten.Image, g *game) {
 	line1 := fmt.Sprintf("HP:%d   SCORE:%d   ENEMY:%d   WAVE:%d/%d", g.player.hp, g.score, len(g.enemies), g.wave, g.maxWave)
-	line2 := "Hold WASD strafe  Double-tap WASD turn  Fire J/Space"
+	line2 := "Hold WASD/Arrow strafe  Double-tap WASD/Arrow turn  Fire J/Space"
 	line3 := fmt.Sprintf("BUFF  SHIELD:%2ds   RAPID:%2ds", g.shieldTick/60, g.rapidTick/60)
 
 	textW := maxInt(textWidth(line1), maxInt(textWidth(line2), textWidth(line3)))

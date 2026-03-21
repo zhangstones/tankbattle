@@ -45,16 +45,24 @@ func (g *game) updatePlayer() {
 }
 
 func (g *game) handlePlayerTurnInput() {
-	if inpututil.IsKeyJustPressed(ebiten.KeyW) {
+	upTap := inpututil.IsKeyJustPressed(ebiten.KeyW) || inpututil.IsKeyJustPressed(ebiten.KeyArrowUp)
+	downTap := inpututil.IsKeyJustPressed(ebiten.KeyS) || inpututil.IsKeyJustPressed(ebiten.KeyArrowDown)
+	leftTap := inpututil.IsKeyJustPressed(ebiten.KeyA) || inpututil.IsKeyJustPressed(ebiten.KeyArrowLeft)
+	rightTap := inpututil.IsKeyJustPressed(ebiten.KeyD) || inpututil.IsKeyJustPressed(ebiten.KeyArrowRight)
+	g.applyPlayerTurnTaps(upTap, downTap, leftTap, rightTap)
+}
+
+func (g *game) applyPlayerTurnTaps(upTap, downTap, leftTap, rightTap bool) {
+	if upTap {
 		g.onPlayerDirTap(up)
 	}
-	if inpututil.IsKeyJustPressed(ebiten.KeyS) {
+	if downTap {
 		g.onPlayerDirTap(down)
 	}
-	if inpututil.IsKeyJustPressed(ebiten.KeyA) {
+	if leftTap {
 		g.onPlayerDirTap(left)
 	}
-	if inpututil.IsKeyJustPressed(ebiten.KeyD) {
+	if rightTap {
 		g.onPlayerDirTap(right)
 	}
 }

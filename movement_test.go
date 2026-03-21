@@ -403,6 +403,38 @@ func TestCanMoveOnHeldBootstrapsWhenPressedWithoutJustPressed(t *testing.T) {
 	}
 }
 
+func TestApplyPlayerTurnTapsDoubleTapTurns(t *testing.T) {
+	g := newPlayingGameForTest()
+	g.player.dir = up
+	g.player.turret = up
+
+	g.frame = 30
+	g.applyPlayerTurnTaps(false, false, false, true)
+	if g.player.dir != up || g.player.turret != up {
+		t.Fatalf("single tap should not turn")
+	}
+
+	g.frame = 40
+	g.applyPlayerTurnTaps(false, false, false, true)
+	if g.player.dir != right || g.player.turret != right {
+		t.Fatalf("double tap should turn to right")
+	}
+}
+
+func TestApplyPlayerTurnTapsOutsideWindowNoTurn(t *testing.T) {
+	g := newPlayingGameForTest()
+	g.player.dir = left
+	g.player.turret = left
+
+	g.frame = 10
+	g.applyPlayerTurnTaps(true, false, false, false)
+	g.frame = 10 + playerTurnDoubleTapFrames + 1
+	g.applyPlayerTurnTaps(true, false, false, false)
+	if g.player.dir != left || g.player.turret != left {
+		t.Fatalf("tap outside window should not change facing")
+	}
+}
+
 func TestSingleEnemySilenceEventuallyDamagesFortress(t *testing.T) {
 	rand.Seed(5)
 	g := newPlayingGameForTest()

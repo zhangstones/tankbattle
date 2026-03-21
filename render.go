@@ -152,35 +152,46 @@ func drawHUD(screen *ebiten.Image, g *game) {
 	}
 
 	barX, barY, barW, barH := 700.0, 30.0, 180.0, 12.0
+	defeatAlert := g.state == stateEnded && !g.win
 	ebitenutil.DebugPrintAt(screen, "FORTRESS", int(barX), int(barY)-16)
-	ebitenutil.DrawRect(screen, barX, barY, barW, barH, color.RGBA{40, 40, 46, 220})
 	rate := float64(g.fort.hp) / float64(g.fort.maxHP)
 	if rate < 0 {
 		rate = 0
 	}
-	fill := color.RGBA{69, 220, 148, 240}
+	fortFill := color.RGBA{69, 220, 148, 240}
 	if rate < 0.45 {
-		fill = color.RGBA{240, 96, 74, 240}
+		fortFill = color.RGBA{240, 96, 74, 240}
 	}
-	ebitenutil.DrawRect(screen, barX+1, barY+1, (barW-2)*rate, barH-2, fill)
+	if defeatAlert {
+		fortFill = color.RGBA{255, 72, 72, 240}
+	}
+	drawEnergyBar(screen, barX, barY, barW, barH, rate, fortFill, "", defeatAlert)
 	ebitenutil.DebugPrintAt(screen, fmt.Sprintf("%d/%d", g.fort.hp, g.fort.maxHP), int(barX)+int(barW)+8, int(barY)-1)
 
 	tankY := barY + 34
 	tankNow, tankMax := playerCombinedEnergy(g.player)
 	tankRate := float64(tankNow) / float64(maxInt(tankMax, 1))
-	drawEnergyBar(screen, barX, tankY, barW, barH, tankRate, color.RGBA{88, 210, 128, 240}, "TANK")
+	drawEnergyBar(screen, barX, tankY, barW, barH, tankRate, color.RGBA{88, 210, 128, 240}, "TANK", defeatAlert)
 	ebitenutil.DebugPrintAt(screen, fmt.Sprintf("%d/%d", tankNow, tankMax), int(barX)+int(barW)+8, int(tankY)-1)
 }
 
-func drawEnergyBar(screen *ebiten.Image, x, y, w, h, rate float64, fill color.Color, label string) {
+func drawEnergyBar(screen *ebiten.Image, x, y, w, h, rate float64, fill color.Color, label string, alert bool) {
 	if rate < 0 {
 		rate = 0
 	}
 	if rate > 1 {
 		rate = 1
 	}
-	ebitenutil.DebugPrintAt(screen, label, int(x), int(y)-12)
+	if label != "" {
+		ebitenutil.DebugPrintAt(screen, label, int(x), int(y)-12)
+	}
+	if alert {
+		ebitenutil.DrawRect(screen, x-1, y-1, w+2, h+2, color.RGBA{255, 64, 64, 220})
+	}
 	ebitenutil.DrawRect(screen, x, y, w, h, color.RGBA{38, 42, 48, 220})
+	if alert {
+		fill = color.RGBA{255, 96, 64, 240}
+	}
 	ebitenutil.DrawRect(screen, x+1, y+1, (w-2)*rate, h-2, fill)
 }
 

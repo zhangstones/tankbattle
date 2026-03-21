@@ -50,6 +50,9 @@ func TestUpdateDefeatWhenFortressDestroyed(t *testing.T) {
 	if g.state != stateEnded || g.win {
 		t.Fatalf("expected defeat end state")
 	}
+	if g.fort.hp != 0 || g.player.hp != 0 || g.player.turretHP != 0 {
+		t.Fatalf("defeat should clamp fortress and tank energies to zero")
+	}
 }
 
 func TestUpdateDefeatWhenPlayerDestroyed(t *testing.T) {
@@ -60,6 +63,9 @@ func TestUpdateDefeatWhenPlayerDestroyed(t *testing.T) {
 	}
 	if g.state != stateEnded || g.win {
 		t.Fatalf("expected defeat end state")
+	}
+	if g.fort.hp != 0 || g.player.hp != 0 || g.player.turretHP != 0 {
+		t.Fatalf("defeat should clamp fortress and tank energies to zero")
 	}
 }
 

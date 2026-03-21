@@ -59,6 +59,7 @@ func (g *game) Update() error {
 	g.trySpawnRandomPowerup()
 
 	if g.fort.hp <= 0 || g.player.hp <= 0 {
+		g.applyDefeatEnergyState()
 		g.state = stateEnded
 		g.win = false
 		return nil
@@ -130,4 +131,10 @@ func (g *game) updateExplosions() {
 
 func (g *game) spawnExplosion(x, y, radius float64) {
 	g.explosions = append(g.explosions, &explosion{x: x, y: y, radius: radius, life: 16, max: 16})
+}
+
+func (g *game) applyDefeatEnergyState() {
+	g.fort.hp = 0
+	g.player.hp = 0
+	g.player.turretHP = 0
 }

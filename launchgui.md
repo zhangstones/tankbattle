@@ -409,6 +409,29 @@ D:\Workspace\guilauncher\run.json
 '@ | Set-Content -Path D:\Workspace\guilauncher\run.json -Encoding UTF8
 ```
 
+### 可选：重启模式（restart）
+
+如果你希望“先关闭旧实例，再启动新实例”，可写入：
+
+```powershell
+@'
+{
+  "app": "tankbattle",
+  "restart": true
+}
+'@ | Set-Content -Path D:\Workspace\guilauncher\run.json -Encoding UTF8
+```
+
+使用 `restart: true` 时，建议在 `config.json` 对应应用中配置 `processNames`，示例：
+
+```json
+"tankbattle": {
+  "exe": "D:\\Workspace\\tankbattle\\tankbattle_gui.exe",
+  "workdir": "D:\\Workspace\\tankbattle",
+  "processNames": ["tankbattle_gui", "tankbattle"]
+}
+```
+
 ---
 
 ## 第二步：运行计划任务
@@ -418,6 +441,12 @@ schtasks /run /tn "guilauncher"
 ```
 
 执行后，计划任务会在当前登录用户桌面会话中运行 `launchgui.ps1`，再由脚本根据 `run.json` 和 `config.json` 启动对应 GUI。
+
+若当前环境 `schtasks` 不可用，可回退直调：
+
+```powershell
+powershell.exe -ExecutionPolicy Bypass -File D:\Workspace\guilauncher\launchgui.ps1
+```
 
 ---
 

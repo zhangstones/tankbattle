@@ -60,9 +60,25 @@ powershell.exe -ExecutionPolicy Bypass -File D:\Workspace\guilauncher\launchgui.
 Get-Content D:\Workspace\guilauncher\logs\launcher.log -Tail 30
 ```
 
+## 重启模式（restart）
+
+当需要“先关闭旧实例再拉起新实例”时，在 `run.json` 中增加：
+
+```json
+{
+  "app": "tankbattle",
+  "restart": true
+}
+```
+
+要求：
+- `config.json` 中应为该应用配置 `processNames`，用于精确匹配待关闭进程。
+- 日志中应出现 `restart requested` 与 `restart: ...` 记录。
+
 ## 验证标准
 
 - 日志出现 `launch success app=<appId>`。
+- 若使用 `restart:true`，日志应出现重启流程记录后再 `launch success`。
 - 触发过程不阻塞当前代理前台操作。
 - 用户桌面会话中可见目标 GUI（以用户可见结果为准）。
 

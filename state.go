@@ -16,6 +16,11 @@ func (g *game) Update() error {
 
 	switch g.state {
 	case stateMenu:
+		if inpututil.IsKeyJustPressed(ebiten.KeyM) {
+			g.playSFX(sfxMenuConfirm)
+			g.leaveMenuByToggle()
+			return nil
+		}
 		g.updateMenu()
 		return nil
 	case stateEnded:
@@ -27,14 +32,14 @@ func (g *game) Update() error {
 		}
 		if inpututil.IsKeyJustPressed(ebiten.KeyM) {
 			g.playSFX(sfxMenuConfirm)
-			g.returnToMenu()
+			g.enterMenuForConfig()
 		}
 		return nil
 	}
 
 	if inpututil.IsKeyJustPressed(ebiten.KeyM) {
 		g.playSFX(sfxMenuConfirm)
-		g.returnToMenu()
+		g.enterMenuForConfig()
 		return nil
 	}
 	if inpututil.IsKeyJustPressed(ebiten.KeyH) {
@@ -161,11 +166,45 @@ func (g *game) returnToMenu() {
 func (g *game) togglePause() {
 	g.paused = !g.paused
 	g.playSFX(sfxPauseToggle)
-	if g.paused {
-		g.setMessage("Paused", 999999)
+}
+
+func (g *game) enterMenuForConfig() {
+	if g.state == stateMenu {
 		return
 	}
-	g.setMessage("Resume", 45)
+	g.menuResumeAvailable = true
+	g.menuReturnState = g.state
+	g.menuReturnPaused = g.paused
+	g.menuRequireRestart = false
+	g.state = stateMenu
+	g.paused = false
+	g.showHistory = false
+}
+
+func (g *game) leaveMenuByToggle() {
+	if !g.menuResumeAvailable {
+		return
+	}
+	if g.menuRequireRestart {
+		g.startMatch()
+		g.menuResumeAvailable = false
+		g.menuRequireRestart = false
+		return
+	}
+	g.state = g.menuReturnState
+	g.paused = g.menuReturnPaused
+	if g.state == stateEnded {
+		g.paused = false
+	}
+	g.showHistory = false
+	g.menuResumeAvailable = false
+	g.menuRequireRestart = false
+}
+
+func (g *game) markMenuRequireRestart() {
+	if g.menuResumeAvailable {
+		g.menuRequireRestart = true
+	}
 }
 
 func (g *game) cleanupWalls() {

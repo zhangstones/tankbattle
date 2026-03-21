@@ -203,6 +203,11 @@ type game struct {
 	matchLogged  bool
 	showHistory  bool
 
+	menuResumeAvailable bool
+	menuReturnState     gameState
+	menuReturnPaused    bool
+	menuRequireRestart  bool
+
 	playerTapFrame      [4]int
 	playerPressStart    [4]int
 	playerMoveLockUntil int

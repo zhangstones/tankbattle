@@ -151,3 +151,39 @@ func TestMenuBlockedSFXAtBounds(t *testing.T) {
 		t.Fatalf("expected blocked sfx on volume lower bound, got %v (ok=%v)", last, ok)
 	}
 }
+
+func TestAudioMenuChangesDoNotRequireRestart(t *testing.T) {
+	g := newPlayingGameForTest()
+	g.enterMenuForConfig()
+	g.menuIndex = 2
+	g.applyMenuAction(menuInc)
+	if g.menuRequireRestart {
+		t.Fatalf("sound toggle should not require restart")
+	}
+	g.menuIndex = 3
+	g.soundVolume = 50
+	g.applyMenuAction(menuInc)
+	if g.menuRequireRestart {
+		t.Fatalf("sound volume change should not require restart")
+	}
+}
+
+func TestDifficultyOrWaveMenuChangesRequireRestart(t *testing.T) {
+	g := newPlayingGameForTest()
+	g.enterMenuForConfig()
+	g.menuIndex = 0
+	g.difficulty = diffNormal
+	g.applyMenuAction(menuInc)
+	if !g.menuRequireRestart {
+		t.Fatalf("difficulty change should require restart")
+	}
+
+	g2 := newPlayingGameForTest()
+	g2.enterMenuForConfig()
+	g2.menuIndex = 1
+	g2.totalWaves = matchWaveMin + 1
+	g2.applyMenuAction(menuDec)
+	if !g2.menuRequireRestart {
+		t.Fatalf("total waves change should require restart")
+	}
+}

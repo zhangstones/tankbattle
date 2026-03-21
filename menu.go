@@ -68,11 +68,13 @@ func (g *game) applyMenuAction(action menuAction) {
 			g.difficulty--
 			g.totalWaves = g.maxWaveByDifficulty()
 			g.enemyBase = g.enemyBaseByDifficulty()
+			g.markMenuRequireRestart()
 			g.playSFX(sfxMenuMove)
 			handled = true
 		}
 		if g.menuIndex == 1 && g.totalWaves > matchWaveMin {
 			g.totalWaves--
+			g.markMenuRequireRestart()
 			g.playSFX(sfxMenuMove)
 			handled = true
 		}
@@ -97,11 +99,13 @@ func (g *game) applyMenuAction(action menuAction) {
 			g.difficulty++
 			g.totalWaves = g.maxWaveByDifficulty()
 			g.enemyBase = g.enemyBaseByDifficulty()
+			g.markMenuRequireRestart()
 			g.playSFX(sfxMenuMove)
 			handled = true
 		}
 		if g.menuIndex == 1 && g.totalWaves < matchWaveMax {
 			g.totalWaves++
+			g.markMenuRequireRestart()
 			g.playSFX(sfxMenuMove)
 			handled = true
 		}
@@ -124,16 +128,19 @@ func (g *game) applyMenuAction(action menuAction) {
 		g.difficulty = diffEasy
 		g.totalWaves = g.maxWaveByDifficulty()
 		g.enemyBase = g.enemyBaseByDifficulty()
+		g.markMenuRequireRestart()
 		g.playSFX(sfxMenuConfirm)
 	case menuSetNormal:
 		g.difficulty = diffNormal
 		g.totalWaves = g.maxWaveByDifficulty()
 		g.enemyBase = g.enemyBaseByDifficulty()
+		g.markMenuRequireRestart()
 		g.playSFX(sfxMenuConfirm)
 	case menuSetHard:
 		g.difficulty = diffHard
 		g.totalWaves = g.maxWaveByDifficulty()
 		g.enemyBase = g.enemyBaseByDifficulty()
+		g.markMenuRequireRestart()
 		g.playSFX(sfxMenuConfirm)
 	case menuStart:
 		g.playSFX(sfxMenuConfirm)

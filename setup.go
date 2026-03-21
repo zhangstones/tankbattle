@@ -49,6 +49,8 @@ func (g *game) startMatch() {
 	g.matchLogged = false
 	g.rankScroll = 0
 	g.showHistory = false
+	g.menuResumeAvailable = false
+	g.menuRequireRestart = false
 
 	fortW := float64(gridSize * 2)
 	fortH := float64(gridSize)

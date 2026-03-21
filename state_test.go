@@ -122,15 +122,23 @@ func TestReturnToMenuClearsPause(t *testing.T) {
 	}
 }
 
-func TestTogglePauseSetsExpectedMessage(t *testing.T) {
+func TestTogglePauseOnlySwitchesState(t *testing.T) {
 	g := newPlayingGameForTest()
+	g.msg = "unchanged"
+	g.msgTick = 23
 	g.togglePause()
-	if !g.paused || g.msg != "Paused" {
-		t.Fatalf("togglePause should pause and set paused message")
+	if !g.paused {
+		t.Fatalf("togglePause should pause")
+	}
+	if g.msg != "unchanged" || g.msgTick != 23 {
+		t.Fatalf("togglePause should not write message box state")
 	}
 	g.togglePause()
-	if g.paused || g.msg != "Resume" {
-		t.Fatalf("togglePause should resume and set resume message")
+	if g.paused {
+		t.Fatalf("togglePause should resume")
+	}
+	if g.msg != "unchanged" || g.msgTick != 23 {
+		t.Fatalf("togglePause resume should not write message box state")
 	}
 }
 
@@ -152,6 +160,40 @@ func TestToggleHistoryViewDoesNotShowMessage(t *testing.T) {
 	}
 	if g.msg != "keep" || g.msgTick != 12 {
 		t.Fatalf("toggleHistoryView should not change message state when disabling")
+	}
+}
+
+func TestEnterMenuAndLeaveRestoresPausedMatch(t *testing.T) {
+	g := newPlayingGameForTest()
+	g.paused = true
+	g.enterMenuForConfig()
+	if g.state != stateMenu {
+		t.Fatalf("enterMenuForConfig should switch to menu")
+	}
+	if g.paused {
+		t.Fatalf("menu state should not keep paused flag")
+	}
+	g.leaveMenuByToggle()
+	if g.state != statePlaying {
+		t.Fatalf("leaveMenuByToggle should restore playing state")
+	}
+	if !g.paused {
+		t.Fatalf("leaveMenuByToggle should restore paused state")
+	}
+}
+
+func TestLeaveMenuStartsNewMatchWhenRestartRequired(t *testing.T) {
+	g := newPlayingGameForTest()
+	g.score = 456
+	g.wave = 3
+	g.enterMenuForConfig()
+	g.menuRequireRestart = true
+	g.leaveMenuByToggle()
+	if g.state != statePlaying {
+		t.Fatalf("restart-required leave should start match")
+	}
+	if g.wave != 1 || g.score != 0 {
+		t.Fatalf("restart-required leave should reset match, wave=%d score=%d", g.wave, g.score)
 	}
 }
 

@@ -35,8 +35,8 @@ const (
 	menuHelpBottomPadding    = 14
 	menuHelpToOptionGap      = 14
 
-	menuOptionBoxHeight     = 50
-	menuOptionTextTopInset  = 12
+	menuOptionBoxHeight     = 44
+	menuOptionTextTopInset  = 9
 	menuOptionMinGap        = 8
 	menuOptionMaxGap        = 16
 	menuOptionBottomPadding = 12
@@ -47,7 +47,7 @@ const (
 const (
 	menuTitleText = "TANK BATTLE // MISSION SETTINGS"
 	menuHelpLine1 = "UP/DOWN select, LEFT/RIGHT modify/toggle, ENTER start, FIRE J/Space"
-	menuHelpLine2 = "Shortcuts: 1/2/3 difficulty, +/- enemy amount"
+	menuHelpLine2 = "Shortcuts: 1/2/3 difficulty"
 	menuHelpLine3 = "Combat: hold WASD/Arrow strafe, double-tap WASD/Arrow turn, FIRE J/Space"
 )
 
@@ -147,14 +147,14 @@ func drawMenu(screen *ebiten.Image, g *game) {
 
 	titles := []string{
 		"Difficulty: " + diffText,
-		fmt.Sprintf("Enemy Count / Wave: %d", g.enemyBase),
+		fmt.Sprintf("Total Waves: %d", g.totalWaves),
 		fmt.Sprintf("Sound Effects: %s", onOffText(g.soundEnabled)),
 		fmt.Sprintf("SFX Volume: %d%%", g.soundVolume),
 		"Start Mission",
 	}
 	descs := []string{
 		diffDesc,
-		"How many tanks appear each wave.",
+		"How many waves in one match (1-5).",
 		"Toggle all in-game sound effects.",
 		"Adjust effect volume in 25% steps.",
 		"Start with current settings.",

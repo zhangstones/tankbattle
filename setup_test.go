@@ -43,6 +43,44 @@ func TestMaxWaveByDifficulty(t *testing.T) {
 	}
 }
 
+func TestClampedTotalWaves(t *testing.T) {
+	g := newGame()
+	g.totalWaves = -3
+	if g.clampedTotalWaves() != matchWaveMin {
+		t.Fatalf("total waves should clamp to min %d", matchWaveMin)
+	}
+	g.totalWaves = 999
+	if g.clampedTotalWaves() != matchWaveMax {
+		t.Fatalf("total waves should clamp to max %d", matchWaveMax)
+	}
+}
+
+func TestStartMatchUsesConfiguredTotalWaves(t *testing.T) {
+	g := newGame()
+	g.difficulty = diffHard
+	g.totalWaves = 1
+	g.startMatch()
+	if g.maxWave != 1 {
+		t.Fatalf("startMatch should use configured total waves, got %d", g.maxWave)
+	}
+}
+
+func TestEnemyBaseByDifficulty(t *testing.T) {
+	g := newGame()
+	g.difficulty = diffEasy
+	if g.enemyBaseByDifficulty() != 2 {
+		t.Fatalf("easy enemy base mismatch")
+	}
+	g.difficulty = diffNormal
+	if g.enemyBaseByDifficulty() != 3 {
+		t.Fatalf("normal enemy base mismatch")
+	}
+	g.difficulty = diffHard
+	if g.enemyBaseByDifficulty() != 4 {
+		t.Fatalf("hard enemy base mismatch")
+	}
+}
+
 func TestEnemyMultipliersByDifficulty(t *testing.T) {
 	g := newGame()
 	g.difficulty = diffEasy

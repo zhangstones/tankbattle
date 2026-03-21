@@ -17,10 +17,12 @@ const (
 
 	menuItemCount = 5
 
-	enemyBaseMin = 2
+	enemyBaseMin = 1
 	enemyBaseMax = 8
 	enemyWaveMin = 1
 	enemyWaveMax = 10
+	matchWaveMin = 1
+	matchWaveMax = 5
 
 	powerupMaxActive = 3
 	powerupSize      = 16.0
@@ -180,6 +182,7 @@ type game struct {
 
 	difficulty   difficulty
 	enemyBase    int
+	totalWaves   int
 	menuIndex    int
 	soundEnabled bool
 	soundVolume  int

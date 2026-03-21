@@ -20,6 +20,7 @@ func newGame() *game {
 		state:        stateMenu,
 		difficulty:   diffNormal,
 		enemyBase:    3,
+		totalWaves:   4,
 		menuIndex:    0,
 		soundEnabled: true,
 		soundVolume:  75,
@@ -32,7 +33,8 @@ func newGame() *game {
 func (g *game) startMatch() {
 	g.state = statePlaying
 	g.wave = 1
-	g.maxWave = g.maxWaveByDifficulty()
+	g.maxWave = g.clampedTotalWaves()
+	g.enemyBase = g.enemyBaseByDifficulty()
 	g.score = 0
 	g.enemyKills = 0
 	g.win = false
@@ -93,6 +95,27 @@ func (g *game) maxWaveByDifficulty() int {
 	default:
 		return 4
 	}
+}
+
+func (g *game) enemyBaseByDifficulty() int {
+	switch g.difficulty {
+	case diffEasy:
+		return 2
+	case diffHard:
+		return 4
+	default:
+		return 3
+	}
+}
+
+func (g *game) clampedTotalWaves() int {
+	if g.totalWaves < matchWaveMin {
+		return matchWaveMin
+	}
+	if g.totalWaves > matchWaveMax {
+		return matchWaveMax
+	}
+	return g.totalWaves
 }
 
 func (g *game) enemySpeedMultiplier() float64 {

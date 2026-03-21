@@ -16,8 +16,6 @@ const (
 	menuSetEasy
 	menuSetNormal
 	menuSetHard
-	menuEnemyDown
-	menuEnemyUp
 )
 
 func (g *game) updateMenu() {
@@ -35,12 +33,6 @@ func (g *game) updateMenu() {
 	}
 	if inpututil.IsKeyJustPressed(ebiten.Key3) {
 		g.applyMenuAction(menuSetHard)
-	}
-	if inpututil.IsKeyJustPressed(ebiten.KeyMinus) || inpututil.IsKeyJustPressed(ebiten.KeyNumpadSubtract) {
-		g.applyMenuAction(menuEnemyDown)
-	}
-	if inpututil.IsKeyJustPressed(ebiten.KeyEqual) || inpututil.IsKeyJustPressed(ebiten.KeyNumpadAdd) {
-		g.applyMenuAction(menuEnemyUp)
 	}
 	if inpututil.IsKeyJustPressed(ebiten.KeyEnter) || inpututil.IsKeyJustPressed(ebiten.KeySpace) {
 		g.applyMenuAction(menuStart)
@@ -74,11 +66,13 @@ func (g *game) applyMenuAction(action menuAction) {
 		handled := false
 		if g.menuIndex == 0 && g.difficulty > diffEasy {
 			g.difficulty--
+			g.totalWaves = g.maxWaveByDifficulty()
+			g.enemyBase = g.enemyBaseByDifficulty()
 			g.playSFX(sfxMenuMove)
 			handled = true
 		}
-		if g.menuIndex == 1 && g.enemyBase > enemyBaseMin {
-			g.enemyBase--
+		if g.menuIndex == 1 && g.totalWaves > matchWaveMin {
+			g.totalWaves--
 			g.playSFX(sfxMenuMove)
 			handled = true
 		}
@@ -101,11 +95,13 @@ func (g *game) applyMenuAction(action menuAction) {
 		handled := false
 		if g.menuIndex == 0 && g.difficulty < diffHard {
 			g.difficulty++
+			g.totalWaves = g.maxWaveByDifficulty()
+			g.enemyBase = g.enemyBaseByDifficulty()
 			g.playSFX(sfxMenuMove)
 			handled = true
 		}
-		if g.menuIndex == 1 && g.enemyBase < enemyBaseMax {
-			g.enemyBase++
+		if g.menuIndex == 1 && g.totalWaves < matchWaveMax {
+			g.totalWaves++
 			g.playSFX(sfxMenuMove)
 			handled = true
 		}
@@ -126,27 +122,19 @@ func (g *game) applyMenuAction(action menuAction) {
 		}
 	case menuSetEasy:
 		g.difficulty = diffEasy
+		g.totalWaves = g.maxWaveByDifficulty()
+		g.enemyBase = g.enemyBaseByDifficulty()
 		g.playSFX(sfxMenuConfirm)
 	case menuSetNormal:
 		g.difficulty = diffNormal
+		g.totalWaves = g.maxWaveByDifficulty()
+		g.enemyBase = g.enemyBaseByDifficulty()
 		g.playSFX(sfxMenuConfirm)
 	case menuSetHard:
 		g.difficulty = diffHard
+		g.totalWaves = g.maxWaveByDifficulty()
+		g.enemyBase = g.enemyBaseByDifficulty()
 		g.playSFX(sfxMenuConfirm)
-	case menuEnemyDown:
-		if g.enemyBase > enemyBaseMin {
-			g.enemyBase--
-			g.playSFX(sfxMenuMove)
-		} else {
-			g.playSFX(sfxMenuBlocked)
-		}
-	case menuEnemyUp:
-		if g.enemyBase < enemyBaseMax {
-			g.enemyBase++
-			g.playSFX(sfxMenuMove)
-		} else {
-			g.playSFX(sfxMenuBlocked)
-		}
 	case menuStart:
 		g.playSFX(sfxMenuConfirm)
 		g.startMatch()

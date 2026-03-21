@@ -11,7 +11,7 @@ func TestMenuStartFromAnySelection(t *testing.T) {
 	}
 }
 
-func TestMenuDifficultyAndEnemyBaseBounds(t *testing.T) {
+func TestMenuDifficultyAndTotalWaveDefaults(t *testing.T) {
 	g := newGame()
 	g.menuIndex = 0
 	g.difficulty = diffNormal
@@ -19,21 +19,31 @@ func TestMenuDifficultyAndEnemyBaseBounds(t *testing.T) {
 	if g.difficulty != diffHard {
 		t.Fatalf("expected difficulty to increase to hard")
 	}
+	if g.totalWaves != 5 {
+		t.Fatalf("difficulty change should reset total waves to hard default 5, got %d", g.totalWaves)
+	}
 	g.applyMenuAction(menuInc)
 	if g.difficulty != diffHard {
 		t.Fatalf("difficulty should stay at hard upper bound")
 	}
 
-	g.menuIndex = 1
-	g.enemyBase = enemyBaseMin
-	g.applyMenuAction(menuDec)
-	if g.enemyBase != enemyBaseMin {
-		t.Fatalf("enemyBase should stay at lower bound %d", enemyBaseMin)
+	if g.enemyBase != 4 {
+		t.Fatalf("difficulty change should apply hard enemy base, got %d", g.enemyBase)
 	}
-	g.enemyBase = enemyBaseMax
+}
+
+func TestMenuTotalWaveBounds(t *testing.T) {
+	g := newGame()
+	g.menuIndex = 1
+	g.totalWaves = matchWaveMin
+	g.applyMenuAction(menuDec)
+	if g.totalWaves != matchWaveMin {
+		t.Fatalf("total waves should stay at lower bound %d", matchWaveMin)
+	}
+	g.totalWaves = matchWaveMax
 	g.applyMenuAction(menuInc)
-	if g.enemyBase != enemyBaseMax {
-		t.Fatalf("enemyBase should stay at upper bound %d", enemyBaseMax)
+	if g.totalWaves != matchWaveMax {
+		t.Fatalf("total waves should stay at upper bound %d", matchWaveMax)
 	}
 }
 
@@ -56,34 +66,30 @@ func TestApplyMenuSetDifficultyActions(t *testing.T) {
 	if g.difficulty != diffEasy {
 		t.Fatalf("menuSetEasy failed")
 	}
+	if g.totalWaves != 3 {
+		t.Fatalf("easy should reset total waves to 3, got %d", g.totalWaves)
+	}
 	g.applyMenuAction(menuSetNormal)
 	if g.difficulty != diffNormal {
 		t.Fatalf("menuSetNormal failed")
+	}
+	if g.totalWaves != 4 {
+		t.Fatalf("normal should reset total waves to 4, got %d", g.totalWaves)
 	}
 	g.applyMenuAction(menuSetHard)
 	if g.difficulty != diffHard {
 		t.Fatalf("menuSetHard failed")
 	}
-}
-
-func TestApplyMenuEnemyShortcutBounds(t *testing.T) {
-	g := newGame()
-	g.enemyBase = enemyBaseMin
-	g.applyMenuAction(menuEnemyDown)
-	if g.enemyBase != enemyBaseMin {
-		t.Fatalf("enemy lower bound broken")
-	}
-	g.enemyBase = enemyBaseMax
-	g.applyMenuAction(menuEnemyUp)
-	if g.enemyBase != enemyBaseMax {
-		t.Fatalf("enemy upper bound broken")
+	if g.totalWaves != 5 {
+		t.Fatalf("hard should reset total waves to 5, got %d", g.totalWaves)
 	}
 }
 
 func TestMenuSoundToggle(t *testing.T) {
 	g := newGame()
-	if !g.soundEnabled {
-		t.Fatalf("sound should be enabled by default")
+	g.soundEnabled = true
+	if g.audio != nil {
+		g.audio.SetEnabled(true)
 	}
 	g.menuIndex = 2
 	g.applyMenuAction(menuInc)

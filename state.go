@@ -10,6 +10,13 @@ import (
 func (g *game) Update() error {
 	g.audioFrame++
 
+	if inpututil.IsKeyJustPressed(ebiten.KeyH) {
+		g.toggleHistoryView()
+	}
+	if g.showHistory && g.state != stateMenu && g.anyHistoryDismissActionPressed() {
+		g.showHistory = false
+	}
+
 	if inpututil.IsKeyJustPressed(ebiten.KeyR) && g.restartIfAllowed() {
 		return nil
 	}
@@ -24,9 +31,6 @@ func (g *game) Update() error {
 		g.updateMenu()
 		return nil
 	case stateEnded:
-		if inpututil.IsKeyJustPressed(ebiten.KeyH) {
-			g.toggleHistoryView()
-		}
 		if g.showHistory {
 			g.updateRankScrollInput()
 		}
@@ -41,9 +45,6 @@ func (g *game) Update() error {
 		g.playSFX(sfxMenuConfirm)
 		g.enterMenuForConfig()
 		return nil
-	}
-	if inpututil.IsKeyJustPressed(ebiten.KeyH) {
-		g.toggleHistoryView()
 	}
 	if g.showHistory {
 		g.updateRankScrollInput()
@@ -147,6 +148,46 @@ func (g *game) updateRankScrollInput() {
 func (g *game) toggleHistoryView() {
 	g.showHistory = !g.showHistory
 	g.clampRankScroll()
+}
+
+func (g *game) anyHistoryDismissActionPressed() bool {
+	keys := []ebiten.Key{
+		ebiten.KeyR,
+		ebiten.KeyM,
+		ebiten.KeyP,
+		ebiten.KeyEnter,
+		ebiten.KeySpace,
+		ebiten.KeyJ,
+		ebiten.KeyArrowUp,
+		ebiten.KeyArrowDown,
+		ebiten.KeyArrowLeft,
+		ebiten.KeyArrowRight,
+		ebiten.KeyW,
+		ebiten.KeyA,
+		ebiten.KeyS,
+		ebiten.KeyD,
+		ebiten.Key1,
+		ebiten.Key2,
+		ebiten.Key3,
+	}
+	for _, k := range keys {
+		if isHistoryDismissKey(k) && inpututil.IsKeyJustPressed(k) {
+			return true
+		}
+	}
+	return false
+}
+
+func isHistoryDismissKey(k ebiten.Key) bool {
+	switch k {
+	case ebiten.KeyR, ebiten.KeyM, ebiten.KeyP, ebiten.KeyEnter, ebiten.KeySpace, ebiten.KeyJ,
+		ebiten.KeyArrowUp, ebiten.KeyArrowDown, ebiten.KeyArrowLeft, ebiten.KeyArrowRight,
+		ebiten.KeyW, ebiten.KeyA, ebiten.KeyS, ebiten.KeyD,
+		ebiten.Key1, ebiten.Key2, ebiten.Key3:
+		return true
+	default:
+		return false
+	}
 }
 
 func (g *game) restartIfAllowed() bool {

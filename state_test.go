@@ -1,6 +1,10 @@
 package tankbattle
 
-import "testing"
+import (
+	"testing"
+
+	"github.com/hajimehoshi/ebiten/v2"
+)
 
 func TestFunctionalWaveProgressionAndSpawn(t *testing.T) {
 	g := newGame()
@@ -194,6 +198,26 @@ func TestLeaveMenuStartsNewMatchWhenRestartRequired(t *testing.T) {
 	}
 	if g.wave != 1 || g.score != 0 {
 		t.Fatalf("restart-required leave should reset match, wave=%d score=%d", g.wave, g.score)
+	}
+}
+
+func TestIsHistoryDismissKeyCoverage(t *testing.T) {
+	keys := []ebiten.Key{
+		ebiten.KeyR, ebiten.KeyM, ebiten.KeyP, ebiten.KeyEnter, ebiten.KeySpace, ebiten.KeyJ,
+		ebiten.KeyArrowUp, ebiten.KeyArrowDown, ebiten.KeyArrowLeft, ebiten.KeyArrowRight,
+		ebiten.KeyW, ebiten.KeyA, ebiten.KeyS, ebiten.KeyD,
+		ebiten.Key1, ebiten.Key2, ebiten.Key3,
+	}
+	for _, k := range keys {
+		if !isHistoryDismissKey(k) {
+			t.Fatalf("key %v should dismiss history", k)
+		}
+	}
+	if isHistoryDismissKey(ebiten.KeyH) {
+		t.Fatalf("H should not be treated as dismiss-only key")
+	}
+	if isHistoryDismissKey(ebiten.KeyPageUp) || isHistoryDismissKey(ebiten.KeyPageDown) {
+		t.Fatalf("PgUp/PgDn should be reserved for history scrolling, not dismiss")
 	}
 }
 

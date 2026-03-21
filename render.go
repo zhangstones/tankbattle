@@ -107,6 +107,11 @@ func (g *game) Draw(screen *ebiten.Image) {
 
 	drawHUD(screen, g)
 
+	if g.showHistory {
+		drawHistoryPanel(screen, g)
+		return
+	}
+
 	if g.msg != "" {
 		msgY := messageBoxTopY()
 		ebitenutil.DrawRect(screen, screenW/2-160, float64(msgY), 320, 34, color.RGBA{8, 14, 18, 220})
@@ -128,9 +133,6 @@ func (g *game) Draw(screen *ebiten.Image) {
 		ebitenutil.DebugPrintAt(screen, "R restart  M menu", screenW/2-54, screenH/2+12)
 	}
 
-	if g.showHistory {
-		drawHistoryPanel(screen, g)
-	}
 }
 
 func drawMenu(screen *ebiten.Image, g *game) {

@@ -8,7 +8,7 @@ const (
 	bulletSize = 6.0
 
 	playerHullMaxHP   = 5
-	playerTurretMaxHP = 6
+	playerTurretMaxHP = 5
 
 	menuItemCount = 3
 

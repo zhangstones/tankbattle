@@ -50,6 +50,17 @@ func TestUpdateBulletsDamagesFortress(t *testing.T) {
 	}
 }
 
+func TestUpdateBulletsFortressHPClampedAtZero(t *testing.T) {
+	g := newPlayingGameForTest()
+	g.walls = nil
+	g.fort.hp = 1
+	g.bullets = []*bullet{{x: g.fort.box.x + 2, y: g.fort.box.y + 2, vx: 0, vy: 0, fromPlayer: false, alive: true, dmg: 1}}
+	g.updateBullets()
+	if g.fort.hp != 0 {
+		t.Fatalf("fortress hp should clamp at zero, got %d", g.fort.hp)
+	}
+}
+
 func TestUpdateBulletsPlayerShieldAbsorbsDamage(t *testing.T) {
 	g := newPlayingGameForTest()
 	g.walls = nil

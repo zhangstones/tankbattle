@@ -35,6 +35,9 @@ func (g *game) updateBullets() {
 		if overlap(br, g.fort.box) {
 			if !b.fromPlayer {
 				g.fort.hp -= fortHitDamage
+				if g.fort.hp < 0 {
+					g.fort.hp = 0
+				}
 				g.score = maxInt(0, g.score-fortHitLoss)
 			}
 			b.alive = false

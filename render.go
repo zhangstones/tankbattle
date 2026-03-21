@@ -9,6 +9,12 @@ import (
 	"github.com/hajimehoshi/ebiten/v2/ebitenutil"
 )
 
+const (
+	hudTopY      = 10
+	hudHeight    = 132
+	hudMessageGap = 12
+)
+
 func (g *game) Draw(screen *ebiten.Image) {
 	drawBackground(screen)
 
@@ -61,9 +67,10 @@ func (g *game) Draw(screen *ebiten.Image) {
 	drawHUD(screen, g)
 
 	if g.msg != "" {
-		ebitenutil.DrawRect(screen, screenW/2-160, 84, 320, 34, color.RGBA{8, 14, 18, 220})
-		ebitenutil.DrawRect(screen, screenW/2-156, 88, 312, 26, color.RGBA{44, 104, 118, 120})
-		ebitenutil.DebugPrintAt(screen, g.msg, screenW/2-58, 96)
+		msgY := messageBoxTopY()
+		ebitenutil.DrawRect(screen, screenW/2-160, float64(msgY), 320, 34, color.RGBA{8, 14, 18, 220})
+		ebitenutil.DrawRect(screen, screenW/2-156, float64(msgY+4), 312, 26, color.RGBA{44, 104, 118, 120})
+		ebitenutil.DebugPrintAt(screen, g.msg, screenW/2-58, msgY+12)
 	}
 	if g.paused {
 		ebitenutil.DrawRect(screen, screenW/2-98, screenH/2-24, 196, 48, color.RGBA{10, 15, 20, 220})
@@ -136,7 +143,7 @@ func drawHUD(screen *ebiten.Image, g *game) {
 	panelW := clampInt(textW+56, 460, 680)
 	badgeX := panelW - 96
 
-	ebitenutil.DrawRect(screen, 10, 10, float64(panelW), 132, color.RGBA{8, 16, 22, 220})
+	ebitenutil.DrawRect(screen, 10, hudTopY, float64(panelW), hudHeight, color.RGBA{8, 16, 22, 220})
 	ebitenutil.DrawRect(screen, 14, 14, float64(panelW-8), 124, color.RGBA{40, 86, 96, 135})
 	ebitenutil.DebugPrintAt(screen, line1, 24, 22)
 	ebitenutil.DebugPrintAt(screen, line2, 24, 44)
@@ -384,4 +391,12 @@ func maxF(a, b float64) float64 {
 		return a
 	}
 	return b
+}
+
+func hudBottomY() int {
+	return hudTopY + hudHeight
+}
+
+func messageBoxTopY() int {
+	return hudBottomY() + hudMessageGap
 }

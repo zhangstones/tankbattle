@@ -23,3 +23,9 @@ func TestPlayerCombinedEnergy(t *testing.T) {
 		t.Fatalf("combined tank energy mismatch: now=%d max=%d", now, max)
 	}
 }
+
+func TestMessageBoxAvoidsHUD(t *testing.T) {
+	if messageBoxTopY() <= hudBottomY() {
+		t.Fatalf("message box should be below HUD: msgTop=%d hudBottom=%d", messageBoxTopY(), hudBottomY())
+	}
+}

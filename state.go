@@ -19,6 +19,12 @@ func (g *game) Update() error {
 		g.updateMenu()
 		return nil
 	case stateEnded:
+		if inpututil.IsKeyJustPressed(ebiten.KeyH) {
+			g.toggleHistoryView()
+		}
+		if g.showHistory {
+			g.updateRankScrollInput()
+		}
 		if inpututil.IsKeyJustPressed(ebiten.KeyM) {
 			g.playSFX(sfxMenuConfirm)
 			g.returnToMenu()
@@ -30,6 +36,12 @@ func (g *game) Update() error {
 		g.playSFX(sfxMenuConfirm)
 		g.returnToMenu()
 		return nil
+	}
+	if inpututil.IsKeyJustPressed(ebiten.KeyH) {
+		g.toggleHistoryView()
+	}
+	if g.showHistory {
+		g.updateRankScrollInput()
 	}
 
 	if inpututil.IsKeyJustPressed(ebiten.KeyP) {
@@ -73,8 +85,7 @@ func (g *game) Update() error {
 			g.playSFX(sfxDestroyPlayer)
 		}
 		g.applyDefeatEnergyState()
-		g.state = stateEnded
-		g.win = false
+		g.finishMatch(false)
 		g.playSFX(sfxLose)
 		return nil
 	}
@@ -82,8 +93,7 @@ func (g *game) Update() error {
 	if len(g.enemies) == 0 {
 		if g.waveDelay == 0 {
 			if g.wave >= g.maxWave {
-				g.state = stateEnded
-				g.win = true
+				g.finishMatch(true)
 				g.playSFX(sfxWin)
 			} else {
 				g.wave++
@@ -103,6 +113,42 @@ func (g *game) Update() error {
 	return nil
 }
 
+func (g *game) finishMatch(win bool) {
+	g.state = stateEnded
+	g.win = win
+	g.appendCurrentScoreHistory()
+}
+
+func (g *game) updateRankScrollInput() {
+	scroll := 0
+	if inpututil.IsKeyJustPressed(ebiten.KeyPageUp) {
+		scroll--
+	}
+	if inpututil.IsKeyJustPressed(ebiten.KeyPageDown) {
+		scroll++
+	}
+	_, wheelY := ebiten.Wheel()
+	if wheelY > 0.2 {
+		scroll--
+	} else if wheelY < -0.2 {
+		scroll++
+	}
+	if scroll != 0 {
+		g.rankScroll += scroll
+		g.clampRankScroll()
+	}
+}
+
+func (g *game) toggleHistoryView() {
+	g.showHistory = !g.showHistory
+	g.clampRankScroll()
+	if g.showHistory {
+		g.setMessage("History On (Wheel/PgUp/PgDn)", 90)
+	} else {
+		g.setMessage("History Off", 45)
+	}
+}
+
 func (g *game) restartIfAllowed() bool {
 	if g.state == stateMenu {
 		return false
@@ -114,6 +160,7 @@ func (g *game) restartIfAllowed() bool {
 func (g *game) returnToMenu() {
 	g.state = stateMenu
 	g.paused = false
+	g.showHistory = false
 }
 
 func (g *game) togglePause() {

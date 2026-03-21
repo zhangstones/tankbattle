@@ -42,6 +42,11 @@ const (
 	menuOptionBottomPadding = 12
 
 	menuTextHeight = 16
+
+	historyPanelX = 170
+	historyPanelY = 90
+	historyPanelW = 620
+	historyPanelH = 420
 )
 
 const (
@@ -101,6 +106,9 @@ func (g *game) Draw(screen *ebiten.Image) {
 	}
 
 	drawHUD(screen, g)
+	if g.showHistory {
+		drawHistoryPanel(screen, g)
+	}
 
 	if g.msg != "" {
 		msgY := messageBoxTopY()
@@ -176,9 +184,9 @@ func drawMenu(screen *ebiten.Image, g *game) {
 }
 
 func drawHUD(screen *ebiten.Image, g *game) {
-	line1 := fmt.Sprintf("SCORE:%d   ENEMY:%d   WAVE:%d/%d", g.score, len(g.enemies), g.wave, g.maxWave)
+	line1 := fmt.Sprintf("SCORE:%d   BEST:%d   RANK:%d   ENEMY:%d   WAVE:%d/%d", g.score, g.bestScore(), g.currentRank(), len(g.enemies), g.wave, g.maxWave)
 	line2 := "Hold WASD/Arrow strafe  Double-tap WASD/Arrow turn  Fire J/Space"
-	line3 := fmt.Sprintf("BUFF  SHIELD:%2ds   RAPID:%2ds", g.shieldTick/60, g.rapidTick/60)
+	line3 := fmt.Sprintf("BUFF  SHIELD:%2ds   RAPID:%2ds   H:toggle history", g.shieldTick/60, g.rapidTick/60)
 
 	textW := maxInt(textWidth(line1), maxInt(textWidth(line2), textWidth(line3)))
 	panelW := clampInt(textW+56, 460, 680)
@@ -223,6 +231,36 @@ func drawHUD(screen *ebiten.Image, g *game) {
 	tankAlert := isDefeat && tankNow <= 0
 	drawEnergyBar(screen, barX, tankY, barW, barH, tankRate, color.RGBA{88, 210, 128, 240}, "TANK", tankAlert)
 	ebitenutil.DebugPrintAt(screen, fmt.Sprintf("%d/%d", tankNow, tankMax), int(barX)+int(barW)+8, int(tankY)-1)
+}
+
+func drawHistoryPanel(screen *ebiten.Image, g *game) {
+	ebitenutil.DrawRect(screen, historyPanelX, historyPanelY, historyPanelW, historyPanelH, color.RGBA{8, 12, 18, 230})
+	ebitenutil.DrawRect(screen, historyPanelX+2, historyPanelY+2, historyPanelW-4, historyPanelH-4, color.RGBA{28, 56, 68, 165})
+	ebitenutil.DebugPrintAt(screen, "SCORE HISTORY  (H hide, Wheel/PgUp/PgDn scroll)", historyPanelX+20, historyPanelY+16)
+
+	entries, start := g.visibleRankEntries()
+	if len(entries) == 0 {
+		ebitenutil.DebugPrintAt(screen, "No historical records yet.", historyPanelX+20, historyPanelY+52)
+		return
+	}
+
+	y := historyPanelY + 50
+	for i, e := range entries {
+		rank := start + i + 1
+		line := fmt.Sprintf("#%02d  %6d  %s", rank, e.Score, formatScoreTime(e.At))
+		ebitenutil.DebugPrintAt(screen, line, historyPanelX+20, y+i*hudRankingLineGap)
+	}
+	ebitenutil.DebugPrintAt(screen, fmt.Sprintf("Showing %d-%d / %d", start+1, start+len(entries), len(g.scoreHistory)), historyPanelX+20, historyPanelY+historyPanelH-22)
+}
+
+func formatScoreTime(ts string) string {
+	if ts == "" {
+		return "-"
+	}
+	if len(ts) >= 16 {
+		return ts[:16]
+	}
+	return ts
 }
 
 func drawEnergyBar(screen *ebiten.Image, x, y, w, h, rate float64, fill color.Color, label string, alert bool) {

@@ -109,12 +109,16 @@ func TestRestartIfAllowedOnlyOutsideMenu(t *testing.T) {
 func TestReturnToMenuClearsPause(t *testing.T) {
 	g := newPlayingGameForTest()
 	g.paused = true
+	g.showHistory = true
 	g.returnToMenu()
 	if g.state != stateMenu {
 		t.Fatalf("returnToMenu should switch state to menu")
 	}
 	if g.paused {
 		t.Fatalf("returnToMenu should clear pause")
+	}
+	if g.showHistory {
+		t.Fatalf("returnToMenu should hide history panel")
 	}
 }
 

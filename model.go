@@ -42,6 +42,10 @@ const (
 	enemyFireCooldownBaseMin = 28
 	enemyFireCooldownBaseVar = 36
 	enemyFireCooldownMin     = 20
+
+	scoreHistoryLimit = 100
+	hudRankingRows    = 5
+	hudRankingLineGap = 14
 )
 
 type direction int
@@ -194,6 +198,10 @@ type game struct {
 	soundEnabled bool
 	soundVolume  int
 	audio        sfxPlayer
+	scoreHistory []scoreEntry
+	rankScroll   int
+	matchLogged  bool
+	showHistory  bool
 
 	playerTapFrame      [4]int
 	playerPressStart    [4]int

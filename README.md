@@ -37,6 +37,7 @@ go build -ldflags="-H windowsgui" -o tankbattle_gui.exe .\cmd\tankbattle
 - `P`：暂停 / 继续
 - `M`：返回主菜单
 - `R`：即时重开
+- `H`：显示 / 隐藏历史战绩面板（滚轮或 `PgUp/PgDn` 滚动）
 
 ## 菜单说明
 
@@ -65,6 +66,9 @@ go build -ldflags="-H windowsgui" -o tankbattle_gui.exe .\cmd\tankbattle
 - 即使只剩 1 辆敌方坦克，长期不反击也会被逐步破堡
 - 玩家支持平移射击：长按移动键进行平移，双击方向键触发转向
 - HUD 右侧显示两条能量条：堡垒（Fortress）与坦克总能量（Tank，车体+炮塔合并）
+- HUD 显示当前分数、历史最高分（Best）与当前排名（Rank）
+- 历史战绩明细通过 `H` 面板查看，不在 HUD 常驻显示
+- 历史战绩最多保留 100 条，并可滚动查看
 - 坦克总能量为 10（车体 5 + 炮塔 5），每次中弹按损伤规则递减
 - 失败时仅失败方能量条归零并切换为醒目告警色
 - 波次/状态提示框自动避让顶部状态栏，避免重叠
@@ -81,7 +85,8 @@ go build -ldflags="-H windowsgui" -o tankbattle_gui.exe .\cmd\tankbattle
 - 屏幕尺寸与网格线保持整数倍关系，堡垒对齐网格且距离底部 1 个网格
 - 道具：护盾、连发、堡垒修复（随机刷新与敌人掉落）
 - 音效系统：写实风格射击/命中/爆炸/道具/UI 音效，资源通过 `embed` 打包进二进制，便于单文件分发
-- 音效设置（开关与音量）会写入 `settings.json`，下次启动自动加载
+- 音效设置（开关与音量）会写入 `~/.tankbattle/settings.json`，下次启动自动加载
+- 设置与历史战绩数据保存到 `~/.tankbattle/settings.json`（不写入当前目录）
 - 音频混音采用分组与优先级策略：状态音（胜负/波次/暂停）可压低其他组，提升关键反馈清晰度
 - 新增波次状态音效：`Prepare wave` 与 `Wave incoming` 均有独立提示音
 - 新增菜单边界提示音（参数到上下限继续调节时触发）

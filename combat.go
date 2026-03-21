@@ -11,6 +11,13 @@ func (g *game) updateBullets() {
 		b.y += b.vy
 		if b.x < 0 || b.y < 0 || b.x > screenW-bulletSize || b.y > screenH-bulletSize {
 			b.alive = false
+		}
+	}
+
+	g.resolveBulletClashes()
+
+	for _, b := range g.bullets {
+		if !b.alive {
 			continue
 		}
 		br := rect{b.x, b.y, bulletSize, bulletSize}
@@ -98,6 +105,34 @@ func (g *game) updateBullets() {
 		}
 	}
 	g.bullets = alive
+}
+
+func (g *game) resolveBulletClashes() {
+	for i := 0; i < len(g.bullets); i++ {
+		bi := g.bullets[i]
+		if !bi.alive {
+			continue
+		}
+		ri := rect{bi.x, bi.y, bulletSize, bulletSize}
+		for j := i + 1; j < len(g.bullets); j++ {
+			bj := g.bullets[j]
+			if !bj.alive || bi.fromPlayer == bj.fromPlayer {
+				continue
+			}
+			rj := rect{bj.x, bj.y, bulletSize, bulletSize}
+			if !overlap(ri, rj) {
+				continue
+			}
+			bi.alive = false
+			bj.alive = false
+			x := (bi.x + bj.x) / 2
+			y := (bi.y + bj.y) / 2
+			g.spawnExplosion(x, y, 12)
+			g.playSFX(sfxHitWall)
+			g.playSFX(sfxExplosionSmall)
+			break
+		}
+	}
 }
 
 func (g *game) fire(t *tank, fromPlayer bool) {

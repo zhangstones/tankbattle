@@ -214,9 +214,21 @@ func TestEnemyFireCooldownRange(t *testing.T) {
 	rand.Seed(7)
 	for i := 0; i < 50; i++ {
 		v := enemyFireCooldown(false, false, 0.5)
-		if v < 18 || v > 76 {
+		if v < enemyFireCooldownBaseMin || v >= enemyFireCooldownBaseMin+enemyFireCooldownBaseVar {
 			t.Fatalf("cooldown out of expected range: %d", v)
 		}
+	}
+}
+
+func TestPlayerFireCooldownValues(t *testing.T) {
+	if playerFireCooldown(false) != playerFireCooldownFrames {
+		t.Fatalf("normal fire cooldown mismatch")
+	}
+	if playerFireCooldown(true) != playerRapidFireCooldownFrames {
+		t.Fatalf("rapid fire cooldown mismatch")
+	}
+	if playerRapidFireCooldownFrames >= playerFireCooldownFrames {
+		t.Fatalf("rapid cooldown should be shorter than normal cooldown")
 	}
 }
 

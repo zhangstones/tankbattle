@@ -35,6 +35,13 @@ const (
 	playerTurnDoubleTapFrames = 16
 	playerTapGraceFrames      = 5
 	playerTurnMoveLockFrames  = 3
+
+	playerFireCooldownFrames      = 13
+	playerRapidFireCooldownFrames = 7
+
+	enemyFireCooldownBaseMin = 28
+	enemyFireCooldownBaseVar = 36
+	enemyFireCooldownMin     = 20
 )
 
 type direction int

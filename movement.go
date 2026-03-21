@@ -36,12 +36,15 @@ func (g *game) updatePlayer() {
 	if (inpututil.IsKeyJustPressed(ebiten.KeyJ) || inpututil.IsKeyJustPressed(ebiten.KeySpace)) && g.player.cooldown == 0 {
 		g.onPlayerFired()
 		g.fire(&g.player, true)
-		if g.rapidTick > 0 {
-			g.player.cooldown = 5
-		} else {
-			g.player.cooldown = 11
-		}
+		g.player.cooldown = playerFireCooldown(g.rapidTick > 0)
 	}
+}
+
+func playerFireCooldown(rapid bool) int {
+	if rapid {
+		return playerRapidFireCooldownFrames
+	}
+	return playerFireCooldownFrames
 }
 
 func (g *game) handlePlayerTurnInput() {
@@ -199,13 +202,13 @@ func enemyFireChance(alignedBase, alignedPlayer bool, fireBonus int, randFactor 
 }
 
 func enemyFireCooldown(alignedBase, alignedPlayer bool, randFactor float64) int {
-	cooldown := rand.Intn(45) + 32
-	cooldown += int((0.5 - randFactor) * 10)
+	cooldown := rand.Intn(enemyFireCooldownBaseVar) + enemyFireCooldownBaseMin
+	cooldown += int((0.5 - randFactor) * 8)
 	if alignedBase || alignedPlayer {
-		cooldown -= rand.Intn(10)
+		cooldown -= rand.Intn(8)
 	}
-	if cooldown < 18 {
-		return 18
+	if cooldown < enemyFireCooldownMin {
+		return enemyFireCooldownMin
 	}
 	return cooldown
 }

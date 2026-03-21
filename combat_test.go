@@ -206,3 +206,30 @@ func TestEnemyFireIsAxisAligned(t *testing.T) {
 		}
 	}
 }
+
+func TestUpdateBulletsOppositeBulletsCancelEachOther(t *testing.T) {
+	g := newPlayingGameForTest()
+	g.walls = nil
+	g.enemies = nil
+	g.player.x = 40
+	g.player.y = 40
+	playerHP := g.player.hp
+	fortHP := g.fort.hp
+
+	g.bullets = []*bullet{
+		{x: 300, y: 300, vx: 0, vy: 0, fromPlayer: true, alive: true, dmg: 1},
+		{x: 300, y: 300, vx: 0, vy: 0, fromPlayer: false, alive: true, dmg: 1},
+	}
+
+	g.updateBullets()
+
+	if len(g.bullets) != 0 {
+		t.Fatalf("opposite bullets should cancel out, remaining=%d", len(g.bullets))
+	}
+	if g.player.hp != playerHP {
+		t.Fatalf("player hp should stay unchanged after bullet clash")
+	}
+	if g.fort.hp != fortHP {
+		t.Fatalf("fortress hp should stay unchanged after bullet clash")
+	}
+}

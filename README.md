@@ -38,6 +38,7 @@ go build -ldflags="-H windowsgui" -o tankbattle_gui.exe .\cmd\tankbattle
 - `M`：返回主菜单
 - `R`：即时重开
 - `H`：显示 / 隐藏历史战绩面板（滚轮或 `PgUp/PgDn` 滚动）
+- `H` 切换历史面板时不弹出提示框
 
 ## 菜单说明
 

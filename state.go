@@ -142,11 +142,6 @@ func (g *game) updateRankScrollInput() {
 func (g *game) toggleHistoryView() {
 	g.showHistory = !g.showHistory
 	g.clampRankScroll()
-	if g.showHistory {
-		g.setMessage("History On (Wheel/PgUp/PgDn)", 90)
-	} else {
-		g.setMessage("History Off", 45)
-	}
 }
 
 func (g *game) restartIfAllowed() bool {

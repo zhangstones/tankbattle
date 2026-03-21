@@ -134,6 +134,27 @@ func TestTogglePauseSetsExpectedMessage(t *testing.T) {
 	}
 }
 
+func TestToggleHistoryViewDoesNotShowMessage(t *testing.T) {
+	g := newPlayingGameForTest()
+	g.msg = "keep"
+	g.msgTick = 12
+	g.showHistory = false
+	g.toggleHistoryView()
+	if !g.showHistory {
+		t.Fatalf("history panel should be enabled")
+	}
+	if g.msg != "keep" || g.msgTick != 12 {
+		t.Fatalf("toggleHistoryView should not change message state")
+	}
+	g.toggleHistoryView()
+	if g.showHistory {
+		t.Fatalf("history panel should be disabled")
+	}
+	if g.msg != "keep" || g.msgTick != 12 {
+		t.Fatalf("toggleHistoryView should not change message state when disabling")
+	}
+}
+
 func TestUpdateInMenuAdvancesAudioFrame(t *testing.T) {
 	g := newGame()
 	g.state = stateMenu

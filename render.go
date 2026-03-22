@@ -12,7 +12,7 @@ import (
 
 const (
 	hudTopY       = 10
-	hudHeight     = 132
+	hudHeight     = 108
 	hudFrameInset = 2
 	statusInset   = 2
 	hudMessageGap = 12
@@ -188,33 +188,93 @@ func drawMenu(screen *ebiten.Image, g *game) {
 }
 
 func drawHUD(screen *ebiten.Image, g *game) {
-	line1 := fmt.Sprintf("SCORE:%d   BEST:%d   RANK:%d   ENEMY:%d   WAVE:%d/%d", g.score, g.bestScore(), g.currentRank(), len(g.enemies), g.wave, g.maxWave)
-	line2 := "Hold WASD/Arrow strafe  Double-tap WASD/Arrow turn  Fire J/Space"
-	line3 := fmt.Sprintf("BUFF  SHIELD:%2ds   RAPID:%2ds   H:toggle history", g.shieldTick/60, g.rapidTick/60)
+	drawHUDCompetitive(screen, g)
+}
 
-	textW := maxInt(textWidth(line1), maxInt(textWidth(line2), textWidth(line3)))
-	panelW := clampInt(textW+56, 460, 680)
-	badgeX := panelW - 96
+func drawHUDCompetitive(screen *ebiten.Image, g *game) {
+	leftX, leftY, leftW, leftH := 10.0, float64(hudTopY), 470.0, 92.0
+	rightY := float64(hudTopY)
 
-	ebitenutil.DrawRect(screen, 10, hudTopY, float64(panelW), hudHeight, color.RGBA{8, 16, 22, 220})
-	ebitenutil.DrawRect(screen, 10+float64(hudFrameInset), hudTopY+float64(hudFrameInset), float64(panelW-hudFrameInset*2), hudHeight-float64(hudFrameInset*2), color.RGBA{40, 86, 96, 135})
-	ebitenutil.DebugPrintAt(screen, line1, 24, 22)
-	ebitenutil.DebugPrintAt(screen, line2, 24, 44)
-	ebitenutil.DebugPrintAt(screen, line3, 24, 66)
-	ebitenutil.DebugPrintAt(screen, playerEnergySummary(g.player), panelW-178, 102)
+	ebitenutil.DrawRect(screen, leftX, leftY, leftW, leftH, color.RGBA{32, 74, 92, 108})
+	ebitenutil.DrawRect(screen, leftX+6, leftY+8, leftW-12, 20, color.RGBA{34, 106, 122, 92})
+
+	row1Y := 23
+	const (
+		col1LabelX = 24
+		col1ValueR = 126
+		col2LabelX = 152
+		col2ValueR = 252
+		col3LabelX = 276
+		col3ValueR = 376
+		col4LabelX = 392
+		col4ValueR = 458
+	)
+	alignRight := func(right int, s string) int {
+		return right - hudTextWidth(s)
+	}
+	drawBoldText(screen, "WAVE", col1LabelX, row1Y)
+	waveText := fmt.Sprintf("%d/%d", g.wave, g.maxWave)
+	ebitenutil.DebugPrintAt(screen, waveText, alignRight(col1ValueR, waveText), row1Y)
+	drawBoldText(screen, "ENEMY", col2LabelX, row1Y)
+	enemyText := fmt.Sprintf("%d", len(g.enemies))
+	ebitenutil.DebugPrintAt(screen, enemyText, alignRight(col2ValueR, enemyText), row1Y)
+	drawBoldText(screen, "SHIELD", col3LabelX, row1Y)
+	shieldText := fmt.Sprintf("%ds", g.shieldTick/60)
+	ebitenutil.DebugPrintAt(screen, shieldText, alignRight(col3ValueR, shieldText), row1Y)
+	drawBoldText(screen, "RAPID", col4LabelX, row1Y)
+	rapidText := fmt.Sprintf("%ds", g.rapidTick/60)
+	ebitenutil.DebugPrintAt(screen, rapidText, alignRight(col4ValueR, rapidText), row1Y)
+
+	row2Y := 47
+	drawBoldText(screen, "SCORE", col1LabelX, row2Y)
+	scoreText := fmt.Sprintf("%d", g.score)
+	ebitenutil.DebugPrintAt(screen, scoreText, alignRight(col1ValueR, scoreText), row2Y)
+	drawBoldText(screen, "BEST", col2LabelX, row2Y)
+	bestText := fmt.Sprintf("%d", g.bestScore())
+	ebitenutil.DebugPrintAt(screen, bestText, alignRight(col2ValueR, bestText), row2Y)
+	drawBoldText(screen, "RANK", col3LabelX, row2Y)
+	rankText := fmt.Sprintf("#%d", g.currentRank())
+	ebitenutil.DebugPrintAt(screen, rankText, alignRight(col3ValueR, rankText), row2Y)
+	drawBoldText(screen, "H", col4LabelX, row2Y)
+	historyText := "history"
+	ebitenutil.DebugPrintAt(screen, historyText, alignRight(col4ValueR, historyText), row2Y)
+
+	row3Y := 71
+	drawBoldText(screen, "MOVE", col1LabelX, row3Y)
+	moveText := "WASD/Arrow"
+	ebitenutil.DebugPrintAt(screen, moveText, alignRight(col1ValueR, moveText), row3Y)
+	drawBoldText(screen, "TURN", col2LabelX, row3Y)
+	turnText := "double-tap"
+	ebitenutil.DebugPrintAt(screen, turnText, alignRight(col2ValueR, turnText), row3Y)
+	drawBoldText(screen, "FIRE", col3LabelX, row3Y)
+	fireText := "J/Space"
+	ebitenutil.DebugPrintAt(screen, fireText, alignRight(col3ValueR, fireText), row3Y)
 
 	if g.shieldTick > 0 {
-		ebitenutil.DrawRect(screen, float64(badgeX), 66, 82, 20, color.RGBA{66, 120, 200, 190})
-		ebitenutil.DebugPrintAt(screen, "SHIELD", badgeX+10, 72)
+		ebitenutil.DrawRect(screen, leftX+leftW-104, leftY+62, 88, 22, color.RGBA{60, 124, 208, 176})
+		ebitenutil.DebugPrintAt(screen, "SHIELD", int(leftX+leftW-88), int(leftY+67))
 	} else if g.rapidTick > 0 {
-		ebitenutil.DrawRect(screen, float64(badgeX), 66, 82, 20, color.RGBA{200, 146, 56, 190})
-		ebitenutil.DebugPrintAt(screen, "RAPID", badgeX+12, 72)
+		ebitenutil.DrawRect(screen, leftX+leftW-104, leftY+62, 88, 22, color.RGBA{210, 152, 68, 176})
+		ebitenutil.DebugPrintAt(screen, "RAPID", int(leftX+leftW-88), int(leftY+67))
 	}
 
-	barX, barY, barW, barH := 700.0, 30.0, 180.0, 12.0
+	drawHUDVitals(screen, g, rightY+30)
+}
+
+func drawHUDVitals(screen *ebiten.Image, g *game, barY float64) {
+	const (
+		rightMargin = 30
+		barWidth    = 180
+		valueGap    = 4
+		valueColW   = 56
+	)
+	valueRight := screenW - rightMargin
+	barX := float64(valueRight - valueColW - valueGap - barWidth)
+	barW, barH := 180.0, 12.0
 	isDefeat := g.state == stateEnded && !g.win
 	fortAlert := isDefeat && g.fort.hp <= 0
-	ebitenutil.DebugPrintAt(screen, "FORTRESS", int(barX), int(barY)-16)
+	const labelGapY = 18
+	drawBoldText(screen, "FORTRESS", int(barX), int(barY)-labelGapY)
 	rate := float64(g.fort.hp) / float64(g.fort.maxHP)
 	if rate < 0 {
 		rate = 0
@@ -227,14 +287,22 @@ func drawHUD(screen *ebiten.Image, g *game) {
 		fortFill = color.RGBA{255, 72, 72, 240}
 	}
 	drawEnergyBar(screen, barX, barY, barW, barH, rate, fortFill, "", fortAlert)
-	ebitenutil.DebugPrintAt(screen, fmt.Sprintf("%d/%d", g.fort.hp, g.fort.maxHP), int(barX)+int(barW)+8, int(barY)-1)
+	fortVal := fmt.Sprintf("%d/%d", g.fort.hp, g.fort.maxHP)
+	ebitenutil.DebugPrintAt(screen, fortVal, valueRight-textWidth(fortVal), int(barY)-1)
 
 	tankY := barY + 34
 	tankNow, tankMax := playerCombinedEnergy(g.player)
 	tankRate := float64(tankNow) / float64(maxInt(tankMax, 1))
 	tankAlert := isDefeat && tankNow <= 0
-	drawEnergyBar(screen, barX, tankY, barW, barH, tankRate, color.RGBA{88, 210, 128, 240}, "TANK", tankAlert)
-	ebitenutil.DebugPrintAt(screen, fmt.Sprintf("%d/%d", tankNow, tankMax), int(barX)+int(barW)+8, int(tankY)-1)
+	drawBoldText(screen, "TANK", int(barX), int(tankY)-labelGapY)
+	drawEnergyBar(screen, barX, tankY, barW, barH, tankRate, color.RGBA{88, 210, 128, 240}, "", tankAlert)
+	tankVal := fmt.Sprintf("%d/%d", tankNow, tankMax)
+	ebitenutil.DebugPrintAt(screen, tankVal, valueRight-textWidth(tankVal), int(tankY)-1)
+}
+
+func drawBoldText(screen *ebiten.Image, s string, x, y int) {
+	ebitenutil.DebugPrintAt(screen, s, x, y)
+	ebitenutil.DebugPrintAt(screen, s, x+1, y)
 }
 
 func drawHistoryPanel(screen *ebiten.Image, g *game) {
@@ -326,10 +394,6 @@ func drawEnergyBar(screen *ebiten.Image, x, y, w, h, rate float64, fill color.Co
 		fill = color.RGBA{255, 96, 64, 240}
 	}
 	ebitenutil.DrawRect(screen, x+1, y+1, (w-2)*rate, h-2, fill)
-}
-
-func playerEnergySummary(p tank) string {
-	return fmt.Sprintf("H:%d/%d  T:%d/%d", p.hp, maxInt(p.maxHP, 1), p.turretHP, maxInt(p.turretMaxHP, 1))
 }
 
 func playerCombinedEnergy(p tank) (int, int) {
@@ -501,6 +565,11 @@ func drawCircle(screen *ebiten.Image, cx, cy, r float64, c color.Color) {
 
 func textWidth(s string) int {
 	return len([]rune(s)) * 7
+}
+
+func hudTextWidth(s string) int {
+	// Ebiten debug font visual width is slightly tighter than 7px per rune.
+	return len([]rune(s)) * 6
 }
 
 func maxInt(a, b int) int {

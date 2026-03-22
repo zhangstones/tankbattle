@@ -66,6 +66,7 @@ go build -ldflags="-H windowsgui" -o tankbattle_gui.exe .\cmd\tankbattle
 - 包含敌方 AI、射击碰撞、道具增益与胜负结算
 - HUD 显示核心战斗信息，历史战绩可通过 `H` 面板查看
 - 音效资源内置打包：用户配置持久化到 `~/.tankbattle/settings.json`，历史战绩持久化到 `~/.tankbattle/history.json`
+- Windows 版本运行时窗口使用自定义程序图标
 
 ## 测试
 

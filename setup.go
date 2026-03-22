@@ -167,15 +167,108 @@ func (g *game) buildFortDefense() {
 }
 
 func (g *game) buildArenaObstacles() {
-	g.addDestructibleChunks(rect{150, 160, 140, 26}, tankSize, 1, false)
-	g.addDestructibleChunks(rect{350, 285, 260, 24}, tankSize, 1, false)
-	g.addDestructibleChunks(rect{690, 160, 140, 26}, tankSize, 1, false)
-	g.addDestructibleChunks(rect{170, 450, 220, 24}, tankSize, 1, false)
-	g.addDestructibleChunks(rect{590, 450, 210, 24}, tankSize, 1, false)
+	for _, box := range g.pickArenaObstacleLayout() {
+		g.addDestructibleChunks(box, tankSize, 1, false)
+	}
 	g.walls = append(g.walls,
 		&wall{box: rect{40, 320, 80, 16}, hp: 99, maxHP: 99, destructive: false},
 		&wall{box: rect{840, 320, 80, 16}, hp: 99, maxHP: 99, destructive: false},
 	)
+}
+
+func (g *game) pickArenaObstacleLayout() []rect {
+	baseTemplates := [][]rect{
+		{
+			{150, 160, 140, 26},
+			{350, 285, 260, 24},
+			{690, 160, 140, 26},
+			{170, 450, 220, 24},
+			{590, 450, 210, 24},
+		},
+		{
+			{130, 170, 170, 24},
+			{330, 300, 300, 22},
+			{670, 170, 170, 24},
+			{180, 430, 190, 24},
+			{610, 430, 190, 24},
+		},
+		{
+			{160, 150, 120, 26},
+			{320, 275, 320, 24},
+			{700, 150, 120, 26},
+			{150, 470, 230, 22},
+			{580, 470, 230, 22},
+		},
+	}
+	pick := rand.Intn(len(baseTemplates))
+	for attempt := 0; attempt < 12; attempt++ {
+		boxes := jitterObstacleLayout(baseTemplates[pick], gridSize)
+		if g.isArenaObstacleLayoutSafe(boxes) {
+			return boxes
+		}
+		pick = rand.Intn(len(baseTemplates))
+	}
+	return append([]rect(nil), baseTemplates[0]...)
+}
+
+func jitterObstacleLayout(base []rect, step int) []rect {
+	if step <= 0 {
+		return append([]rect(nil), base...)
+	}
+	out := make([]rect, 0, len(base))
+	for i, b := range base {
+		dx := float64(jitterStep(step))
+		dy := float64(jitterStep(step))
+		// Keep the center lane stable to avoid accidental hard locks.
+		if i == 1 {
+			dx = 0
+		}
+		box := rect{x: b.x + dx, y: b.y + dy, w: b.w, h: b.h}
+		if i == 3 || i == 4 {
+			// Bottom lane should not drift toward the fortress.
+			maxY := float64(screenH - gridSize*7)
+			if box.y > maxY {
+				box.y = maxY
+			}
+		}
+		out = append(out, box)
+	}
+	return out
+}
+
+func jitterStep(step int) int {
+	switch rand.Intn(3) {
+	case 0:
+		return -step
+	case 1:
+		return 0
+	default:
+		return step
+	}
+}
+
+func (g *game) isArenaObstacleLayoutSafe(boxes []rect) bool {
+	playerSafe := rect{
+		x: g.player.x - float64(gridSize*2),
+		y: g.player.y - float64(gridSize),
+		w: tankSize + float64(gridSize*4),
+		h: tankSize + float64(gridSize*3),
+	}
+	fortSafe := rect{
+		x: g.fort.box.x - float64(gridSize*3),
+		y: g.fort.box.y - float64(gridSize*3),
+		w: g.fort.box.w + float64(gridSize*6),
+		h: g.fort.box.h + float64(gridSize*5),
+	}
+	for _, b := range boxes {
+		if b.x < 0 || b.y < 0 || b.x+b.w > screenW || b.y+b.h > screenH {
+			return false
+		}
+		if overlap(b, playerSafe) || overlap(b, fortSafe) {
+			return false
+		}
+	}
+	return true
 }
 
 func (g *game) distributedSpawns() []spawnPoint {

@@ -235,6 +235,7 @@ func TestPlayerFireCooldownValues(t *testing.T) {
 func TestNextEnemyPlanDirReturnsOccupiableDirection(t *testing.T) {
 	rand.Seed(11)
 	g := newPlayingGameForTest()
+	g.walls = nil
 	e := &tank{x: 200, y: 200, dir: up, speed: 2}
 	g.enemies = []*tank{e}
 	d := g.nextEnemyPlanDir(e)

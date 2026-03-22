@@ -1,7 +1,9 @@
 package tankbattle
 
 import (
+	"fmt"
 	"math/rand"
+	"strings"
 	"testing"
 )
 
@@ -248,4 +250,49 @@ func TestPlayerSpawnIsNotOverlappedAndCanMove(t *testing.T) {
 	if g.player.y >= startY {
 		t.Fatalf("player Y should decrease after upward move")
 	}
+}
+
+func TestArenaObstacleLayoutStableWithSameSeed(t *testing.T) {
+	_ = newGame()
+	rand.Seed(101)
+	g1 := newGame()
+	g1.startMatch()
+	sig1 := obstacleSignature(g1.walls)
+
+	rand.Seed(101)
+	g2 := newGame()
+	g2.startMatch()
+	sig2 := obstacleSignature(g2.walls)
+
+	if sig1 != sig2 {
+		t.Fatalf("same seed should produce same obstacle layout")
+	}
+}
+
+func TestArenaObstacleLayoutVariesAcrossSeeds(t *testing.T) {
+	_ = newGame()
+	rand.Seed(102)
+	g1 := newGame()
+	g1.startMatch()
+	sig1 := obstacleSignature(g1.walls)
+
+	rand.Seed(103)
+	g2 := newGame()
+	g2.startMatch()
+	sig2 := obstacleSignature(g2.walls)
+
+	if sig1 == sig2 {
+		t.Fatalf("different seeds should produce different obstacle layouts")
+	}
+}
+
+func obstacleSignature(walls []*wall) string {
+	var b strings.Builder
+	for _, w := range walls {
+		if !w.destructive || w.guard {
+			continue
+		}
+		b.WriteString(fmt.Sprintf("%.0f:%.0f|", w.box.x, w.box.y))
+	}
+	return b.String()
 }

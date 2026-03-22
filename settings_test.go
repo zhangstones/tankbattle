@@ -59,6 +59,71 @@ func TestSettingsPathUsesTankbattleHomeDir(t *testing.T) {
 	}
 }
 
+func TestHistoryPathUsesTankbattleHomeDir(t *testing.T) {
+	got := filepath.Clean(historyPath())
+	home, err := os.UserHomeDir()
+	if err != nil || home == "" {
+		if !strings.Contains(got, filepath.Join(".tankbattle", "history.json")) {
+			t.Fatalf("history path should use .tankbattle dir, got %q", got)
+		}
+		return
+	}
+	wantSuffix := filepath.Join(home, ".tankbattle", "history.json")
+	if got != filepath.Clean(wantSuffix) {
+		t.Fatalf("history path mismatch: got %q want %q", got, wantSuffix)
+	}
+}
+
+func TestHistoryRoundTrip(t *testing.T) {
+	path := filepath.Join(t.TempDir(), "history.json")
+	in := []scoreEntry{
+		{Score: 300, At: time.Now().UTC().Format(time.RFC3339)},
+		{Score: 100, At: time.Now().UTC().Add(-time.Minute).Format(time.RFC3339)},
+	}
+	if err := saveHistoryAt(path, in); err != nil {
+		t.Fatalf("save history failed: %v", err)
+	}
+	out, err := loadHistoryAt(path)
+	if err != nil {
+		t.Fatalf("load history failed: %v", err)
+	}
+	if len(out) != len(in) {
+		t.Fatalf("history length mismatch: got %d want %d", len(out), len(in))
+	}
+	if out[0].Score != 300 || out[1].Score != 100 {
+		t.Fatalf("history score order mismatch: got %+v", out)
+	}
+}
+
+func TestLoadLegacyScoreHistoryFromSettings(t *testing.T) {
+	path := filepath.Join(t.TempDir(), "settings.json")
+	raw := `{
+  "sound_enabled": true,
+  "sound_volume": 75,
+  "score_history": [
+    {"score": 10, "at": "bad-time"},
+    {"score": 50, "at": "2026-03-22T00:00:00Z"},
+    {"score": -1, "at": "2026-03-21T00:00:00Z"}
+  ]
+}`
+	if err := os.WriteFile(path, []byte(raw), 0o644); err != nil {
+		t.Fatalf("write legacy settings failed: %v", err)
+	}
+	out, err := loadLegacyScoreHistoryFromSettings(path)
+	if err != nil {
+		t.Fatalf("load legacy history failed: %v", err)
+	}
+	if len(out) != 2 {
+		t.Fatalf("legacy history size mismatch: got %d", len(out))
+	}
+	if out[0].Score != 50 {
+		t.Fatalf("legacy history should be sorted desc, top=%d", out[0].Score)
+	}
+	if out[1].At != "" {
+		t.Fatalf("invalid timestamp should be cleared, got %q", out[1].At)
+	}
+}
+
 func TestSanitizeScoreHistorySortedAndLimited(t *testing.T) {
 	entries := make([]scoreEntry, 0, scoreHistoryLimit+5)
 	now := time.Now().UTC()

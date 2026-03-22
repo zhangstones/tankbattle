@@ -98,9 +98,9 @@
 
 ## 7. 持久化与数据策略
 
-持久化文件：`~/.tankbattle/settings.json`
-- 音效开关、音量
-- 历史成绩（最多 100 条）
+持久化文件：
+- `~/.tankbattle/settings.json`（音效开关、音量）
+- `~/.tankbattle/history.json`（历史成绩，最多 100 条）
 
 策略：
 - 读取时清洗与排序（非法数据过滤、降序、长度裁剪）

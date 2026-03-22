@@ -66,5 +66,5 @@ func (g *game) appendCurrentScoreHistory() {
 	})
 	g.scoreHistory = sanitizeScoreHistory(g.scoreHistory)
 	g.clampRankScroll()
-	g.saveUserSettings()
+	g.saveUserHistory()
 }

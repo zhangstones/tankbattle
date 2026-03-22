@@ -14,8 +14,11 @@ type scoreEntry struct {
 }
 
 type userSettings struct {
-	SoundEnabled bool         `json:"sound_enabled"`
-	SoundVolume  int          `json:"sound_volume"`
+	SoundEnabled bool `json:"sound_enabled"`
+	SoundVolume  int  `json:"sound_volume"`
+}
+
+type legacyUserSettings struct {
 	ScoreHistory []scoreEntry `json:"score_history,omitempty"`
 }
 
@@ -28,6 +31,10 @@ func defaultSettings() userSettings {
 
 func settingsPath() string {
 	return filepath.Join(settingsDir(), "settings.json")
+}
+
+func historyPath() string {
+	return filepath.Join(settingsDir(), "history.json")
 }
 
 func settingsDir() string {
@@ -75,13 +82,11 @@ func loadSettingsAt(path string) (userSettings, error) {
 		return defaultSettings(), err
 	}
 	cfg.SoundVolume = clampInt(cfg.SoundVolume, 0, 100)
-	cfg.ScoreHistory = sanitizeScoreHistory(cfg.ScoreHistory)
 	return cfg, nil
 }
 
 func saveSettingsAt(path string, cfg userSettings) error {
 	cfg.SoundVolume = clampInt(cfg.SoundVolume, 0, 100)
-	cfg.ScoreHistory = sanitizeScoreHistory(cfg.ScoreHistory)
 	raw, err := json.MarshalIndent(cfg, "", "  ")
 	if err != nil {
 		return err
@@ -90,6 +95,42 @@ func saveSettingsAt(path string, cfg userSettings) error {
 		return err
 	}
 	return os.WriteFile(path, raw, 0o644)
+}
+
+func loadHistoryAt(path string) ([]scoreEntry, error) {
+	raw, err := os.ReadFile(path)
+	if err != nil {
+		return nil, err
+	}
+	var entries []scoreEntry
+	if err := json.Unmarshal(raw, &entries); err != nil {
+		return nil, err
+	}
+	return sanitizeScoreHistory(entries), nil
+}
+
+func saveHistoryAt(path string, entries []scoreEntry) error {
+	entries = sanitizeScoreHistory(entries)
+	raw, err := json.MarshalIndent(entries, "", "  ")
+	if err != nil {
+		return err
+	}
+	if err := os.MkdirAll(filepath.Dir(path), 0o755); err != nil {
+		return err
+	}
+	return os.WriteFile(path, raw, 0o644)
+}
+
+func loadLegacyScoreHistoryFromSettings(path string) ([]scoreEntry, error) {
+	raw, err := os.ReadFile(path)
+	if err != nil {
+		return nil, err
+	}
+	var legacy legacyUserSettings
+	if err := json.Unmarshal(raw, &legacy); err != nil {
+		return nil, err
+	}
+	return sanitizeScoreHistory(legacy.ScoreHistory), nil
 }
 
 func (g *game) loadUserSettings() {
@@ -105,11 +146,36 @@ func (g *game) loadUserSettings() {
 	}
 	g.soundEnabled = cfg.SoundEnabled
 	g.soundVolume = cfg.SoundVolume
-	g.scoreHistory = sanitizeScoreHistory(cfg.ScoreHistory)
-	g.rankScroll = 0
+	g.loadUserHistory()
 	if g.audio != nil {
 		g.audio.SetEnabled(g.soundEnabled)
 		g.audio.SetSFXVolume(float64(g.soundVolume) / 100.0)
+	}
+}
+
+func (g *game) loadUserHistory() {
+	entries, err := loadHistoryAt(historyPath())
+	if err == nil {
+		g.scoreHistory = entries
+		g.rankScroll = 0
+		return
+	}
+
+	migrated := false
+	for _, p := range []string{settingsPath(), legacySettingsPath()} {
+		legacyHistory, legacyErr := loadLegacyScoreHistoryFromSettings(p)
+		if legacyErr != nil || len(legacyHistory) == 0 {
+			continue
+		}
+		entries = legacyHistory
+		migrated = true
+		break
+	}
+
+	g.scoreHistory = entries
+	g.rankScroll = 0
+	if migrated {
+		_ = saveHistoryAt(historyPath(), entries)
 	}
 }
 
@@ -120,6 +186,12 @@ func (g *game) saveUserSettings() {
 	_ = saveSettingsAt(settingsPath(), userSettings{
 		SoundEnabled: g.soundEnabled,
 		SoundVolume:  g.soundVolume,
-		ScoreHistory: g.scoreHistory,
 	})
+}
+
+func (g *game) saveUserHistory() {
+	if g == nil {
+		return
+	}
+	_ = saveHistoryAt(historyPath(), g.scoreHistory)
 }

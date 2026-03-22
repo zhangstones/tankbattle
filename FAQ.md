@@ -1,7 +1,8 @@
 ﻿# FAQ
 
 ## 1) 设置文件存在哪里？
-- 当前版本将用户配置与历史战绩统一写入：`~/.tankbattle/settings.json`。
+- 当前版本将用户配置写入：`~/.tankbattle/settings.json`。
+- 历史战绩单独写入：`~/.tankbattle/history.json`。
 - 仓库根目录下不再维护 `settings.json`。
 
 ## 2) 为什么改了音量/音效后不用重开？

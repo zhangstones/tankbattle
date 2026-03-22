@@ -22,7 +22,7 @@ jobs:
         run: go build -ldflags="-H windowsgui" -o tankbattle_gui.exe .\cmd\tankbattle
       
       - name: Upload artifact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: tankbattle-windows-gui
           path: tankbattle_gui.exe

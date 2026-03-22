@@ -163,6 +163,7 @@ func (g *game) buildFortDefense() {
 	g.addDestructibleChunks(rect{x: bx - block, y: by - block, w: bw + block*2, h: block}, block, guardHP, true)
 	g.addDestructibleChunks(rect{x: bx - block, y: by, w: block, h: block}, block, guardHP, true)
 	g.addDestructibleChunks(rect{x: bx + bw, y: by, w: block, h: block}, block, guardHP, true)
+	g.addDestructibleChunks(rect{x: bx - block, y: by + block, w: bw + block*2, h: block}, block, guardHP, true)
 }
 
 func (g *game) buildArenaObstacles() {

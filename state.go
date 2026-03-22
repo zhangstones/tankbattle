@@ -46,6 +46,9 @@ func (g *game) Update() error {
 		g.enterMenuForConfig()
 		return nil
 	}
+	if g.tryHandleMagicOutcomeHotkeys() {
+		return nil
+	}
 	if g.showHistory {
 		g.updateRankScrollInput()
 	}
@@ -281,4 +284,30 @@ func (g *game) applyDefeatEnergyState() {
 		g.player.hp = 0
 		g.player.turretHP = 0
 	}
+}
+
+func (g *game) tryHandleMagicOutcomeHotkeys() bool {
+	if g.state != statePlaying {
+		return false
+	}
+	if !isCtrlHeld() {
+		return false
+	}
+	if inpututil.IsKeyJustPressed(ebiten.Key1) {
+		g.finishMatch(true)
+		g.playSFX(sfxWin)
+		return true
+	}
+	if inpututil.IsKeyJustPressed(ebiten.Key0) {
+		g.fort.hp = 0
+		g.applyDefeatEnergyState()
+		g.finishMatch(false)
+		g.playSFX(sfxLose)
+		return true
+	}
+	return false
+}
+
+func isCtrlHeld() bool {
+	return ebiten.IsKeyPressed(ebiten.KeyControlLeft) || ebiten.IsKeyPressed(ebiten.KeyControlRight)
 }

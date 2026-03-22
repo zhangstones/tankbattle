@@ -17,6 +17,11 @@ const (
 	statusInset   = 2
 	hudMessageGap = 12
 
+	pausePanelW = 280
+	pausePanelH = 72
+	endPanelW   = 360
+	endPanelH   = 96
+
 	menuPanelX = 96
 	menuPanelY = 52
 	menuPanelW = 768
@@ -120,18 +125,15 @@ func (g *game) Draw(screen *ebiten.Image) {
 		ebitenutil.DebugPrintAt(screen, g.msg, screenW/2-58, msgY+12)
 	}
 	if g.paused {
-		ebitenutil.DrawRect(screen, screenW/2-98, screenH/2-24, 196, 48, color.RGBA{10, 15, 20, 220})
-		ebitenutil.DrawRect(screen, screenW/2-98+statusInset, screenH/2-24+statusInset, 196-statusInset*2, 48-statusInset*2, color.RGBA{58, 74, 92, 120})
-		ebitenutil.DebugPrintAt(screen, "Paused [P] Resume", screenW/2-54, screenH/2-4)
+		pauseText := "Paused [P] Resume"
+		drawStatusPanel(screen, pausePanelW, pausePanelH, pauseText)
 	}
 	if g.state == stateEnded {
 		msg := "Defeat - Press R to Restart"
 		if g.win {
 			msg = "Victory - Fortress Survived"
 		}
-		ebitenutil.DrawRect(screen, screenW/2-220, screenH/2-45, 440, 90, color.RGBA{12, 16, 22, 220})
-		ebitenutil.DebugPrintAt(screen, msg, screenW/2-100, screenH/2-12)
-		ebitenutil.DebugPrintAt(screen, "R restart  M menu", screenW/2-54, screenH/2+12)
+		drawStatusPanel(screen, endPanelW, endPanelH, msg, "R restart  M menu")
 	}
 
 }
@@ -679,4 +681,22 @@ func centeredTextX(s string, areaX, areaW int) int {
 
 func centeredTextY(areaY, areaH, textH int) int {
 	return areaY + (areaH-textH)/2
+}
+
+func drawStatusPanel(screen *ebiten.Image, panelW, panelH int, lines ...string) {
+	if len(lines) == 0 {
+		return
+	}
+	x := screenW/2 - panelW/2
+	y := screenH/2 - panelH/2
+	ebitenutil.DrawRect(screen, float64(x), float64(y), float64(panelW), float64(panelH), color.RGBA{10, 15, 20, 226})
+	ebitenutil.DrawRect(screen, float64(x+statusInset), float64(y+statusInset), float64(panelW-statusInset*2), float64(panelH-statusInset*2), color.RGBA{58, 74, 92, 132})
+
+	const lineGap = 8
+	textBlockH := len(lines)*menuTextHeight + (len(lines)-1)*lineGap
+	startY := y + (panelH-textBlockH)/2
+	for i, line := range lines {
+		lineY := startY + i*(menuTextHeight+lineGap)
+		ebitenutil.DebugPrintAt(screen, line, centeredTextX(line, x, panelW), lineY)
+	}
 }

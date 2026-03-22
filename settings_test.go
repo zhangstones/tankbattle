@@ -95,35 +95,6 @@ func TestHistoryRoundTrip(t *testing.T) {
 	}
 }
 
-func TestLoadLegacyScoreHistoryFromSettings(t *testing.T) {
-	path := filepath.Join(t.TempDir(), "settings.json")
-	raw := `{
-  "sound_enabled": true,
-  "sound_volume": 75,
-  "score_history": [
-    {"score": 10, "at": "bad-time"},
-    {"score": 50, "at": "2026-03-22T00:00:00Z"},
-    {"score": -1, "at": "2026-03-21T00:00:00Z"}
-  ]
-}`
-	if err := os.WriteFile(path, []byte(raw), 0o644); err != nil {
-		t.Fatalf("write legacy settings failed: %v", err)
-	}
-	out, err := loadLegacyScoreHistoryFromSettings(path)
-	if err != nil {
-		t.Fatalf("load legacy history failed: %v", err)
-	}
-	if len(out) != 2 {
-		t.Fatalf("legacy history size mismatch: got %d", len(out))
-	}
-	if out[0].Score != 50 {
-		t.Fatalf("legacy history should be sorted desc, top=%d", out[0].Score)
-	}
-	if out[1].At != "" {
-		t.Fatalf("invalid timestamp should be cleared, got %q", out[1].At)
-	}
-}
-
 func TestSanitizeScoreHistorySortedAndLimited(t *testing.T) {
 	entries := make([]scoreEntry, 0, scoreHistoryLimit+5)
 	now := time.Now().UTC()
@@ -133,7 +104,7 @@ func TestSanitizeScoreHistorySortedAndLimited(t *testing.T) {
 			At:    now.Add(time.Duration(i) * time.Minute).Format(time.RFC3339),
 		})
 	}
-	entries = append(entries, scoreEntry{Score: -1, At: "bad"})
+	entries = append(entries, scoreEntry{Score: -1, At: "bad", DurationSec: -10})
 	got := sanitizeScoreHistory(entries)
 	if len(got) != scoreHistoryLimit {
 		t.Fatalf("history should be truncated to %d, got %d", scoreHistoryLimit, len(got))
@@ -149,6 +120,9 @@ func TestSanitizeScoreHistorySortedAndLimited(t *testing.T) {
 			if _, err := time.Parse(time.RFC3339, e.At); err != nil {
 				t.Fatalf("invalid timestamp at index %d: %s (%v)", i, fmt.Sprintf("%q", e.At), err)
 			}
+		}
+		if e.DurationSec < 0 {
+			t.Fatalf("duration should be non-negative at index %d", i)
 		}
 	}
 }

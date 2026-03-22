@@ -9,17 +9,14 @@ import (
 )
 
 type scoreEntry struct {
-	Score int    `json:"score"`
-	At    string `json:"at"`
+	Score       int    `json:"score"`
+	At          string `json:"at"`
+	DurationSec int    `json:"duration_sec"`
 }
 
 type userSettings struct {
 	SoundEnabled bool `json:"sound_enabled"`
 	SoundVolume  int  `json:"sound_volume"`
-}
-
-type legacyUserSettings struct {
-	ScoreHistory []scoreEntry `json:"score_history,omitempty"`
 }
 
 func defaultSettings() userSettings {
@@ -54,6 +51,9 @@ func sanitizeScoreHistory(entries []scoreEntry) []scoreEntry {
 	for _, e := range entries {
 		if e.Score < 0 {
 			continue
+		}
+		if e.DurationSec < 0 {
+			e.DurationSec = 0
 		}
 		if _, err := time.Parse(time.RFC3339, e.At); err != nil {
 			e.At = ""
@@ -121,18 +121,6 @@ func saveHistoryAt(path string, entries []scoreEntry) error {
 	return os.WriteFile(path, raw, 0o644)
 }
 
-func loadLegacyScoreHistoryFromSettings(path string) ([]scoreEntry, error) {
-	raw, err := os.ReadFile(path)
-	if err != nil {
-		return nil, err
-	}
-	var legacy legacyUserSettings
-	if err := json.Unmarshal(raw, &legacy); err != nil {
-		return nil, err
-	}
-	return sanitizeScoreHistory(legacy.ScoreHistory), nil
-}
-
 func (g *game) loadUserSettings() {
 	cfg, err := loadSettingsAt(settingsPath())
 	if err != nil {
@@ -160,23 +148,8 @@ func (g *game) loadUserHistory() {
 		g.rankScroll = 0
 		return
 	}
-
-	migrated := false
-	for _, p := range []string{settingsPath(), legacySettingsPath()} {
-		legacyHistory, legacyErr := loadLegacyScoreHistoryFromSettings(p)
-		if legacyErr != nil || len(legacyHistory) == 0 {
-			continue
-		}
-		entries = legacyHistory
-		migrated = true
-		break
-	}
-
 	g.scoreHistory = entries
 	g.rankScroll = 0
-	if migrated {
-		_ = saveHistoryAt(historyPath(), entries)
-	}
 }
 
 func (g *game) saveUserSettings() {

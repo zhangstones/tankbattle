@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"image/color"
 	"math"
+	"time"
 
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/hajimehoshi/ebiten/v2/ebitenutil"
@@ -43,10 +44,10 @@ const (
 
 	menuTextHeight = 16
 
-	historyPanelX = 120
-	historyPanelY = 90
-	historyPanelW = 720
-	historyPanelH = 460
+	historyPanelX = 90
+	historyPanelY = 64
+	historyPanelW = 780
+	historyPanelH = 540
 )
 
 const (
@@ -238,23 +239,27 @@ func drawHUD(screen *ebiten.Image, g *game) {
 
 func drawHistoryPanel(screen *ebiten.Image, g *game) {
 	const (
-		historyPadX        = 24
-		historyTitleYOff   = 18
-		historyHeaderYOff  = 56
-		historyRowsYOff    = 82
-		historyFooterYOff  = 24
+		historyPadX        = 30
+		historyTitleYOff   = 22
+		historyHeaderYOff  = 72
+		historyRowsYOff    = 102
+		historyFooterYOff  = 30
 		historyColRankX    = 0
-		historyColScoreX   = 86
-		historyColTimeX    = 220
-		historyRowBgHeight = 22
+		historyColScoreX   = 92
+		historyColDurX     = 220
+		historyColTimeX    = 332
+		historyRowBgHeight = 24
 	)
 
-	ebitenutil.DrawRect(screen, historyPanelX, historyPanelY, historyPanelW, historyPanelH, color.RGBA{8, 12, 18, 230})
-	ebitenutil.DrawRect(screen, historyPanelX+2, historyPanelY+2, historyPanelW-4, historyPanelH-4, color.RGBA{28, 56, 68, 165})
+	ebitenutil.DrawRect(screen, historyPanelX, historyPanelY, historyPanelW, historyPanelH, color.RGBA{7, 13, 20, 236})
+	ebitenutil.DrawRect(screen, historyPanelX+4, historyPanelY+4, historyPanelW-8, historyPanelH-8, color.RGBA{20, 44, 58, 185})
+	ebitenutil.DrawRect(screen, historyPanelX+8, historyPanelY+10, historyPanelW-16, 42, color.RGBA{30, 85, 102, 175})
+	ebitenutil.DrawRect(screen, historyPanelX+12, historyPanelY+58, historyPanelW-24, 22, color.RGBA{14, 28, 38, 200})
 	ebitenutil.DebugPrintAt(screen, "SCORE HISTORY  (H hide, Wheel/PgUp/PgDn scroll)", historyPanelX+historyPadX, historyPanelY+historyTitleYOff)
 	ebitenutil.DebugPrintAt(screen, "RANK", historyPanelX+historyPadX+historyColRankX, historyPanelY+historyHeaderYOff)
 	ebitenutil.DebugPrintAt(screen, "SCORE", historyPanelX+historyPadX+historyColScoreX, historyPanelY+historyHeaderYOff)
-	ebitenutil.DebugPrintAt(screen, "TIME (UTC)", historyPanelX+historyPadX+historyColTimeX, historyPanelY+historyHeaderYOff)
+	ebitenutil.DebugPrintAt(screen, "DURATION", historyPanelX+historyPadX+historyColDurX, historyPanelY+historyHeaderYOff)
+	ebitenutil.DebugPrintAt(screen, "TIME (LOCAL)", historyPanelX+historyPadX+historyColTimeX, historyPanelY+historyHeaderYOff)
 
 	entries, start := g.visibleRankEntries()
 	if len(entries) == 0 {
@@ -270,10 +275,11 @@ func drawHistoryPanel(screen *ebiten.Image, g *game) {
 		if i%2 == 1 {
 			rowBg = color.RGBA{18, 38, 50, 180}
 		}
-		rowW := float64(historyPanelW - historyPadX*2 + 12)
+		rowW := float64(historyPanelW - historyPadX*2 + 4)
 		ebitenutil.DrawRect(screen, float64(historyPanelX+historyPadX-6), float64(rowY-2), rowW, historyRowBgHeight, rowBg)
 		ebitenutil.DebugPrintAt(screen, fmt.Sprintf("#%02d", rank), historyPanelX+historyPadX+historyColRankX, rowY)
 		ebitenutil.DebugPrintAt(screen, fmt.Sprintf("%6d", e.Score), historyPanelX+historyPadX+historyColScoreX, rowY)
+		ebitenutil.DebugPrintAt(screen, formatDuration(e.DurationSec), historyPanelX+historyPadX+historyColDurX, rowY)
 		ebitenutil.DebugPrintAt(screen, formatScoreTime(e.At), historyPanelX+historyPadX+historyColTimeX, rowY)
 	}
 	ebitenutil.DebugPrintAt(screen, fmt.Sprintf("Showing %d-%d / %d", start+1, start+len(entries), len(g.scoreHistory)), historyPanelX+historyPadX, historyPanelY+historyPanelH-historyFooterYOff)
@@ -283,10 +289,23 @@ func formatScoreTime(ts string) string {
 	if ts == "" {
 		return "-"
 	}
-	if len(ts) >= 16 {
-		return ts[:16]
+	t, err := time.Parse(time.RFC3339, ts)
+	if err != nil {
+		if len(ts) >= 16 {
+			return ts[:16]
+		}
+		return ts
 	}
-	return ts
+	return t.Local().Format("2006-01-02 15:04:05")
+}
+
+func formatDuration(sec int) string {
+	if sec <= 0 {
+		return "00:00"
+	}
+	m := sec / 60
+	s := sec % 60
+	return fmt.Sprintf("%02d:%02d", m, s)
 }
 
 func drawEnergyBar(screen *ebiten.Image, x, y, w, h, rate float64, fill color.Color, label string, alert bool) {

@@ -60,9 +60,14 @@ func (g *game) appendCurrentScoreHistory() {
 		return
 	}
 	g.matchLogged = true
+	durationSec := 0
+	if g.frame > 0 {
+		durationSec = g.frame / 60
+	}
 	g.scoreHistory = append(g.scoreHistory, scoreEntry{
-		Score: maxInt(g.score, 0),
-		At:    time.Now().UTC().Format(time.RFC3339),
+		Score:       maxInt(g.score, 0),
+		At:          time.Now().Format(time.RFC3339),
+		DurationSec: durationSec,
 	})
 	g.scoreHistory = sanitizeScoreHistory(g.scoreHistory)
 	g.clampRankScroll()

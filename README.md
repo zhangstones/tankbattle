@@ -40,6 +40,7 @@ go build -ldflags="-H windowsgui" -o tankbattle_gui.exe .\cmd\tankbattle
 - `H`：显示 / 隐藏历史战绩面板（滚轮或 `PgUp/PgDn` 滚动）
 - `H` 切换历史面板时不弹出提示框
 - 历史面板打开后，按任意功能键会自动隐藏（如 `P/M/R/J/方向键/WASD/Enter/Space`）
+- 历史面板默认展示 10 条记录，包含分数、对局时长与本地时间
 
 ## 菜单说明
 

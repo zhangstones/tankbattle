@@ -3,6 +3,7 @@ package tankbattle
 import (
 	"strings"
 	"testing"
+	"time"
 )
 
 func TestPlayerEnergySummaryMergedRightValue(t *testing.T) {
@@ -94,5 +95,25 @@ func TestHistoryPanelLayoutIsSpacious(t *testing.T) {
 	}
 	if hudRankingLineGap < 22 {
 		t.Fatalf("history row line gap should be spacious, got gap=%d", hudRankingLineGap)
+	}
+}
+
+func TestFormatDuration(t *testing.T) {
+	if got := formatDuration(0); got != "00:00" {
+		t.Fatalf("duration format mismatch: got %q", got)
+	}
+	if got := formatDuration(125); got != "02:05" {
+		t.Fatalf("duration format mismatch: got %q", got)
+	}
+}
+
+func TestFormatScoreTimeUsesLocalClock(t *testing.T) {
+	ts := time.Date(2026, 3, 22, 10, 0, 0, 0, time.UTC).Format(time.RFC3339)
+	got := formatScoreTime(ts)
+	if !strings.Contains(got, "2026-03-22") {
+		t.Fatalf("formatted time should include date, got %q", got)
+	}
+	if len(got) != len("2006-01-02 15:04:05") {
+		t.Fatalf("formatted time should have full local timestamp, got %q", got)
 	}
 }

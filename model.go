@@ -44,7 +44,7 @@ const (
 	enemyFireCooldownMin     = 20
 
 	scoreHistoryLimit = 100
-	hudRankingRows    = 5
+	hudRankingRows    = 10
 	hudRankingLineGap = 26
 )
 

@@ -24,7 +24,7 @@ func TestCurrentRankAndBestScore(t *testing.T) {
 func TestVisibleRankEntriesUsesScrollWindow(t *testing.T) {
 	g := newPlayingGameForTest()
 	g.scoreHistory = nil
-	for i := 0; i < 10; i++ {
+	for i := 0; i < 20; i++ {
 		g.scoreHistory = append(g.scoreHistory, scoreEntry{
 			Score: 1000 - i,
 			At:    time.Now().UTC().Add(time.Duration(-i) * time.Minute).Format(time.RFC3339),
@@ -55,5 +55,23 @@ func TestAppendCurrentScoreHistoryOnlyOnce(t *testing.T) {
 	}
 	if g.scoreHistory[0].Score != 321 {
 		t.Fatalf("saved score mismatch, got %d", g.scoreHistory[0].Score)
+	}
+	if g.scoreHistory[0].DurationSec != 0 {
+		t.Fatalf("default duration should be 0, got %d", g.scoreHistory[0].DurationSec)
+	}
+}
+
+func TestAppendCurrentScoreHistoryStoresDuration(t *testing.T) {
+	g := newPlayingGameForTest()
+	g.scoreHistory = nil
+	g.matchLogged = false
+	g.score = 123
+	g.frame = 183
+	g.appendCurrentScoreHistory()
+	if len(g.scoreHistory) != 1 {
+		t.Fatalf("score history size mismatch, got %d", len(g.scoreHistory))
+	}
+	if g.scoreHistory[0].DurationSec != 3 {
+		t.Fatalf("duration mismatch, got %d", g.scoreHistory[0].DurationSec)
 	}
 }

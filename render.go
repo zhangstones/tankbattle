@@ -144,19 +144,11 @@ func drawMenu(screen *ebiten.Image, g *game) {
 
 	drawSurfacePanel(screen, menuPanelX, menuPanelY, menuPanelW, menuPanelH, uiSteelBlue)
 	drawSurfacePanel(screen, menuHeaderX, menuHeaderY, menuHeaderW, menuHeaderH, uiSignalGreen)
-	drawSurfacePanel(screen, menuSidebarX, 60, menuSidebarW, 476, uiSignalAmber)
-	drawInsetPanel(screen, 92, 528, 520, 36, uiSteelBlue, false, g.audioFrame)
 
 	ebitenutil.DebugPrintAt(screen, menuTitleText, menuTitleX(), menuTitleY())
 	ebitenutil.DebugPrintAt(screen, "Tune the mission before deployment. Gameplay rules stay unchanged.", 112, 106)
 
 	diffLabel, diffDesc, diffRate := difficultyPresentation(g.difficulty)
-
-	for i, line := range []string{menuHelpLine1, menuHelpLine2, menuHelpLine3} {
-		y := layout.helpLineY[i]
-		drawInsetPanel(screen, 92, float64(y-6), 520, 24, uiSteelBlue, false, g.audioFrame)
-		ebitenutil.DebugPrintAt(screen, line, menuHelpTextX(line), y)
-	}
 
 	optionTitles := []string{
 		"Difficulty",
@@ -213,47 +205,31 @@ func drawMenu(screen *ebiten.Image, g *game) {
 		}
 	}
 
-	drawInsetPanel(screen, menuSidebarX+16, 84, 200, 86, uiSignalGreen, false, g.audioFrame)
-	ebitenutil.DebugPrintAt(screen, "PROFILE", menuSidebarX+34, 100)
-	ebitenutil.DebugPrintAt(screen, "Mode: "+diffLabel, menuSidebarX+34, 124)
-	ebitenutil.DebugPrintAt(screen, fmt.Sprintf("Waves: %d", g.totalWaves), menuSidebarX+34, 142)
-	ebitenutil.DebugPrintAt(screen, fmt.Sprintf("Audio: %s %d%%", onOffText(g.soundEnabled), g.soundVolume), menuSidebarX+34, 160)
+	drawInsetPanel(screen, menuSidebarX, 112, menuSidebarW, 92, uiSignalGreen, false, g.audioFrame)
+	ebitenutil.DebugPrintAt(screen, "PROFILE", menuSidebarX+18, 128)
+	ebitenutil.DebugPrintAt(screen, "Mode: "+diffLabel, menuSidebarX+18, 152)
+	ebitenutil.DebugPrintAt(screen, fmt.Sprintf("Waves: %d", g.totalWaves), menuSidebarX+18, 170)
+	ebitenutil.DebugPrintAt(screen, fmt.Sprintf("Audio: %s %d%%", onOffText(g.soundEnabled), g.soundVolume), menuSidebarX+18, 188)
 
-	drawInsetPanel(screen, menuSidebarX+16, 182, 200, 112, uiSteelBlue, false, g.audioFrame)
-	ebitenutil.DebugPrintAt(screen, "MISSION STATE", menuSidebarX+34, 198)
+	drawInsetPanel(screen, menuSidebarX, 218, menuSidebarW, 116, uiSteelBlue, false, g.audioFrame)
+	ebitenutil.DebugPrintAt(screen, "CONTROLS", menuSidebarX+18, 234)
+	ebitenutil.DebugPrintAt(screen, "Up/Down: browse", menuSidebarX+18, 258)
+	ebitenutil.DebugPrintAt(screen, "Left/Right: adjust", menuSidebarX+18, 276)
+	ebitenutil.DebugPrintAt(screen, "Enter: start", menuSidebarX+18, 294)
+	ebitenutil.DebugPrintAt(screen, "M: back or resume", menuSidebarX+18, 312)
+
+	drawInsetPanel(screen, menuSidebarX, 348, menuSidebarW, 116, uiSignalAmber, false, g.audioFrame)
+	ebitenutil.DebugPrintAt(screen, "TIPS", menuSidebarX+18, 364)
+	ebitenutil.DebugPrintAt(screen, "1/2/3 set difficulty.", menuSidebarX+18, 388)
+	ebitenutil.DebugPrintAt(screen, "R restarts in battle.", menuSidebarX+18, 406)
+	ebitenutil.DebugPrintAt(screen, "H opens score history.", menuSidebarX+18, 424)
 	if g.menuResumeAvailable {
-		ebitenutil.DebugPrintAt(screen, "Opened from run.", menuSidebarX+34, 222)
 		if g.menuRequireRestart {
-			ebitenutil.DebugPrintAt(screen, "Setup change restarts.", menuSidebarX+34, 240)
+			ebitenutil.DebugPrintAt(screen, "Setup changes restart run.", menuSidebarX+18, 442)
 		} else {
-			ebitenutil.DebugPrintAt(screen, "Exit keeps run.", menuSidebarX+34, 240)
+			ebitenutil.DebugPrintAt(screen, "Audio changes keep run.", menuSidebarX+18, 442)
 		}
-		ebitenutil.DebugPrintAt(screen, "Enter starts new run.", menuSidebarX+34, 258)
-	} else {
-		ebitenutil.DebugPrintAt(screen, "Ready to deploy.", menuSidebarX+34, 222)
-		ebitenutil.DebugPrintAt(screen, "Difficulty, waves,", menuSidebarX+34, 240)
-		ebitenutil.DebugPrintAt(screen, "audio set here.", menuSidebarX+34, 258)
 	}
-
-	drawInsetPanel(screen, menuSidebarX+16, 306, 200, 154, uiSignalAmber, false, g.audioFrame)
-	ebitenutil.DebugPrintAt(screen, "DEPLOY", menuSidebarX+34, 322)
-	if g.menuResumeAvailable {
-		ebitenutil.DebugPrintAt(screen, "Enter starts setup.", menuSidebarX+34, 346)
-		ebitenutil.DebugPrintAt(screen, "M closes menu.", menuSidebarX+34, 364)
-		if g.menuRequireRestart {
-			ebitenutil.DebugPrintAt(screen, "Close now: restart.", menuSidebarX+34, 396)
-		} else {
-			ebitenutil.DebugPrintAt(screen, "Close now: resume.", menuSidebarX+34, 396)
-		}
-	} else {
-		ebitenutil.DebugPrintAt(screen, "Enter starts mission.", menuSidebarX+34, 346)
-		ebitenutil.DebugPrintAt(screen, "Adjust, then launch.", menuSidebarX+34, 364)
-	}
-
-	ebitenutil.DebugPrintAt(screen, "Tip: R restarts in battle, H opens score history.", 110, 540)
-
-	drawSurfacePanel(screen, 92, menuFooterY, 780, 28, uiSteelBlue)
-	ebitenutil.DebugPrintAt(screen, "Enter start  Left/Right adjust  Up/Down browse  M back", 214, menuFooterY+8)
 }
 
 func difficultyPresentation(d difficulty) (string, string, float64) {
@@ -765,11 +741,11 @@ func computeMenuLayout(optionCount int) menuLayout {
 		optionTextY:   make([]int, 0, maxInt(optionCount, 0)),
 	}
 
-	helpStartY := menuHeaderY + menuHeaderH + menuHelpTopGapFromHeader
+	helpStartY := menuHeaderY + menuHeaderH + 2
 	for i := 0; i < menuHelpLineCount; i++ {
 		l.helpLineY[i] = helpStartY + i*menuHelpLineGap
 	}
-	l.helpBottomY = l.helpLineY[menuHelpLineCount-1] + menuHelpBottomPadding
+	l.helpBottomY = menuHeaderY + menuHeaderH + 2
 	l.optionsTopY = l.helpBottomY + menuHelpToOptionGap
 
 	if optionCount <= 0 {

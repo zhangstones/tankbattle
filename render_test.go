@@ -127,8 +127,8 @@ func TestMenuSidebarAndDescriptionsStayWithinTextColumns(t *testing.T) {
 		menuValueColumnGap  = 16
 		menuDescTextX       = 116
 		menuSidebarX        = 640
-		menuSidebarTextX    = 674
-		menuSidebarPanelW   = 200
+		menuSidebarTextX    = 658
+		menuSidebarPanelW   = 232
 		menuSidebarRightPad = 18
 	)
 	menuValuePillX := menuOptionsX + menuOptionsW - menuValuePillW - menuValueColumnGap
@@ -146,18 +146,15 @@ func TestMenuSidebarAndDescriptionsStayWithinTextColumns(t *testing.T) {
 	for _, line := range []string{
 		"Mode: NORMAL",
 		"Audio: ON 75%",
-		"Opened from run.",
-		"Setup change restarts.",
-		"Exit keeps run.",
-		"Ready to deploy.",
-		"Difficulty, waves,",
-		"audio set here.",
-		"Enter starts setup.",
-		"M closes menu.",
-		"Close now: restart.",
-		"Close now: resume.",
-		"Enter starts mission.",
-		"Adjust, then launch.",
+		"Up/Down: browse",
+		"Left/Right: adjust",
+		"Enter: start",
+		"M: back or resume",
+		"1/2/3 set difficulty.",
+		"R restarts in battle.",
+		"H opens score history.",
+		"Setup changes restart run.",
+		"Audio changes keep run.",
 	} {
 		if textWidth(line) > sidebarMaxWidth {
 			t.Fatalf("sidebar text should fit sidebar card: %q width=%d limit=%d", line, textWidth(line), sidebarMaxWidth)

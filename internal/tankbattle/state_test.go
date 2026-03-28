@@ -1,0 +1,254 @@
+package tankbattle
+
+import (
+	"testing"
+
+	"github.com/hajimehoshi/ebiten/v2"
+)
+
+func TestFunctionalWaveProgressionAndSpawn(t *testing.T) {
+	g := newGame()
+	g.startMatch()
+	g.maxWave = 3
+	g.wave = 1
+	g.enemies = nil
+	g.waveDelay = 0
+
+	if err := g.Update(); err != nil {
+		t.Fatalf("Update error: %v", err)
+	}
+	if g.wave != 2 || g.waveDelay == 0 {
+		t.Fatalf("expected prepare next wave, got wave=%d delay=%d", g.wave, g.waveDelay)
+	}
+
+	for g.waveDelay > 0 {
+		g.enemies = nil
+		_ = g.Update()
+	}
+	if len(g.enemies) == 0 {
+		t.Fatalf("expected next wave enemies spawned")
+	}
+}
+
+func TestFunctionalVictoryTransition(t *testing.T) {
+	g := newGame()
+	g.startMatch()
+	g.wave = g.maxWave
+	g.enemies = nil
+	g.waveDelay = 0
+
+	if err := g.Update(); err != nil {
+		t.Fatalf("Update error: %v", err)
+	}
+	if g.state != stateEnded || !g.win {
+		t.Fatalf("expected victory end state")
+	}
+}
+
+func TestUpdateDefeatWhenFortressDestroyed(t *testing.T) {
+	g := newPlayingGameForTest()
+	initialPlayerHP := g.player.hp
+	initialTurretHP := g.player.turretHP
+	g.fort.hp = 0
+	if err := g.Update(); err != nil {
+		t.Fatalf("Update error: %v", err)
+	}
+	if g.state != stateEnded || g.win {
+		t.Fatalf("expected defeat end state")
+	}
+	if g.fort.hp != 0 {
+		t.Fatalf("fortress hp should clamp to zero on fortress defeat")
+	}
+	if g.player.hp != initialPlayerHP || g.player.turretHP != initialTurretHP {
+		t.Fatalf("tank energy should remain unchanged on fortress-only defeat")
+	}
+}
+
+func TestUpdateDefeatWhenPlayerDestroyed(t *testing.T) {
+	g := newPlayingGameForTest()
+	initialFortHP := g.fort.hp
+	g.player.hp = 0
+	if err := g.Update(); err != nil {
+		t.Fatalf("Update error: %v", err)
+	}
+	if g.state != stateEnded || g.win {
+		t.Fatalf("expected defeat end state")
+	}
+	if g.player.hp != 0 || g.player.turretHP != 0 {
+		t.Fatalf("tank energy should clamp to zero on player defeat")
+	}
+	if g.fort.hp != initialFortHP {
+		t.Fatalf("fortress hp should remain unchanged on player-only defeat")
+	}
+}
+
+func TestUpdateWaveDelayDoesNotSpawnEarly(t *testing.T) {
+	g := newPlayingGameForTest()
+	g.enemies = nil
+	g.wave = 1
+	g.waveDelay = 2
+	_ = g.Update()
+	if len(g.enemies) != 0 {
+		t.Fatalf("should not spawn while waveDelay > 0")
+	}
+}
+
+func TestRestartIfAllowedOnlyOutsideMenu(t *testing.T) {
+	g := newGame()
+	g.state = stateMenu
+	if g.restartIfAllowed() {
+		t.Fatalf("restart should be blocked in menu state")
+	}
+
+	g.state = stateEnded
+	g.score = 200
+	if !g.restartIfAllowed() {
+		t.Fatalf("restart should be allowed outside menu state")
+	}
+	if g.state != statePlaying || g.score != 0 || g.wave != 1 {
+		t.Fatalf("restart should reset state and start match")
+	}
+}
+
+func TestReturnToMenuClearsPause(t *testing.T) {
+	g := newPlayingGameForTest()
+	g.paused = true
+	g.showHistory = true
+	g.returnToMenu()
+	if g.state != stateMenu {
+		t.Fatalf("returnToMenu should switch state to menu")
+	}
+	if g.paused {
+		t.Fatalf("returnToMenu should clear pause")
+	}
+	if g.showHistory {
+		t.Fatalf("returnToMenu should hide history panel")
+	}
+}
+
+func TestTogglePauseOnlySwitchesState(t *testing.T) {
+	g := newPlayingGameForTest()
+	g.msg = "unchanged"
+	g.msgTick = 23
+	g.togglePause()
+	if !g.paused {
+		t.Fatalf("togglePause should pause")
+	}
+	if g.msg != "unchanged" || g.msgTick != 23 {
+		t.Fatalf("togglePause should not write message box state")
+	}
+	g.togglePause()
+	if g.paused {
+		t.Fatalf("togglePause should resume")
+	}
+	if g.msg != "unchanged" || g.msgTick != 23 {
+		t.Fatalf("togglePause resume should not write message box state")
+	}
+}
+
+func TestToggleHistoryViewDoesNotShowMessage(t *testing.T) {
+	g := newPlayingGameForTest()
+	g.msg = "keep"
+	g.msgTick = 12
+	g.showHistory = false
+	g.toggleHistoryView()
+	if !g.showHistory {
+		t.Fatalf("history panel should be enabled")
+	}
+	if g.msg != "keep" || g.msgTick != 12 {
+		t.Fatalf("toggleHistoryView should not change message state")
+	}
+	g.toggleHistoryView()
+	if g.showHistory {
+		t.Fatalf("history panel should be disabled")
+	}
+	if g.msg != "keep" || g.msgTick != 12 {
+		t.Fatalf("toggleHistoryView should not change message state when disabling")
+	}
+}
+
+func TestEnterMenuAndLeaveRestoresPausedMatch(t *testing.T) {
+	g := newPlayingGameForTest()
+	g.paused = true
+	g.enterMenuForConfig()
+	if g.state != stateMenu {
+		t.Fatalf("enterMenuForConfig should switch to menu")
+	}
+	if g.paused {
+		t.Fatalf("menu state should not keep paused flag")
+	}
+	g.leaveMenuByToggle()
+	if g.state != statePlaying {
+		t.Fatalf("leaveMenuByToggle should restore playing state")
+	}
+	if !g.paused {
+		t.Fatalf("leaveMenuByToggle should restore paused state")
+	}
+}
+
+func TestLeaveMenuStartsNewMatchWhenRestartRequired(t *testing.T) {
+	g := newPlayingGameForTest()
+	g.score = 456
+	g.wave = 3
+	g.enterMenuForConfig()
+	g.menuRequireRestart = true
+	g.leaveMenuByToggle()
+	if g.state != statePlaying {
+		t.Fatalf("restart-required leave should start match")
+	}
+	if g.wave != 1 || g.score != 0 {
+		t.Fatalf("restart-required leave should reset match, wave=%d score=%d", g.wave, g.score)
+	}
+}
+
+func TestIsHistoryDismissKeyCoverage(t *testing.T) {
+	keys := []ebiten.Key{
+		ebiten.KeyR, ebiten.KeyM, ebiten.KeyP, ebiten.KeyEnter, ebiten.KeySpace, ebiten.KeyJ,
+		ebiten.KeyArrowUp, ebiten.KeyArrowDown, ebiten.KeyArrowLeft, ebiten.KeyArrowRight,
+		ebiten.KeyW, ebiten.KeyA, ebiten.KeyS, ebiten.KeyD,
+		ebiten.Key1, ebiten.Key2, ebiten.Key3,
+	}
+	for _, k := range keys {
+		if !isHistoryDismissKey(k) {
+			t.Fatalf("key %v should dismiss history", k)
+		}
+	}
+	if isHistoryDismissKey(ebiten.KeyH) {
+		t.Fatalf("H should not be treated as dismiss-only key")
+	}
+	if isHistoryDismissKey(ebiten.KeyPageUp) || isHistoryDismissKey(ebiten.KeyPageDown) {
+		t.Fatalf("PgUp/PgDn should be reserved for history scrolling, not dismiss")
+	}
+}
+
+func TestUpdateInMenuAdvancesAudioFrame(t *testing.T) {
+	g := newGame()
+	g.state = stateMenu
+	before := g.audioFrame
+	if err := g.Update(); err != nil {
+		t.Fatalf("Update error: %v", err)
+	}
+	if g.audioFrame <= before {
+		t.Fatalf("audio frame should advance in menu update, before=%d after=%d", before, g.audioFrame)
+	}
+}
+
+func TestStartMatchDoesNotResetAudioFrame(t *testing.T) {
+	g := newGame()
+	g.audioFrame = 123
+	g.startMatch()
+	if g.audioFrame != 123 {
+		t.Fatalf("startMatch should not reset audio frame, got %d", g.audioFrame)
+	}
+}
+
+func TestPlaySFXUsesAudioFrame(t *testing.T) {
+	g := newGame()
+	mock := &mockSFXPlayer{enabled: true}
+	g.audio = mock
+	g.audioFrame = 77
+	g.playSFX(sfxMenuMove)
+	if frame, ok := mock.lastFrame(); !ok || frame != 77 {
+		t.Fatalf("playSFX should pass audio frame, got %d (ok=%v)", frame, ok)
+	}
+}

@@ -3,7 +3,7 @@ package main
 import (
 	"log"
 
-	"tankbattle"
+	tankbattle "tankbattle/internal/tankbattle"
 )
 
 func main() {

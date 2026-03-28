@@ -1,0 +1,321 @@
+package tankbattle
+
+import (
+	"fmt"
+
+	"github.com/hajimehoshi/ebiten/v2"
+	"github.com/hajimehoshi/ebiten/v2/inpututil"
+)
+
+func (g *game) Update() error {
+	if !(g.debug != nil && g.debugFreeze) {
+		g.audioFrame++
+	}
+	if err := g.processDebugRequests(); err != nil {
+		return err
+	}
+	if g.debug != nil && g.debugFreeze {
+		return nil
+	}
+
+	if inpututil.IsKeyJustPressed(ebiten.KeyH) {
+		g.toggleHistoryView()
+	}
+	if g.showHistory && g.state != stateMenu && g.anyHistoryDismissActionPressed() {
+		g.showHistory = false
+	}
+
+	if inpututil.IsKeyJustPressed(ebiten.KeyR) && g.restartIfAllowed() {
+		return nil
+	}
+
+	switch g.state {
+	case stateMenu:
+		if inpututil.IsKeyJustPressed(ebiten.KeyM) {
+			g.playSFX(sfxMenuConfirm)
+			g.leaveMenuByToggle()
+			return nil
+		}
+		g.updateMenu()
+		return nil
+	case stateEnded:
+		if g.showHistory {
+			g.updateRankScrollInput()
+		}
+		if inpututil.IsKeyJustPressed(ebiten.KeyM) {
+			g.playSFX(sfxMenuConfirm)
+			g.enterMenuForConfig()
+		}
+		return nil
+	}
+
+	if inpututil.IsKeyJustPressed(ebiten.KeyM) {
+		g.playSFX(sfxMenuConfirm)
+		g.enterMenuForConfig()
+		return nil
+	}
+	if g.tryHandleMagicOutcomeHotkeys() {
+		return nil
+	}
+	if g.showHistory {
+		g.updateRankScrollInput()
+	}
+
+	if inpututil.IsKeyJustPressed(ebiten.KeyP) {
+		g.togglePause()
+	}
+	if g.paused {
+		return nil
+	}
+
+	g.frame++
+	g.playerSilentFrames++
+	if g.msgTick > 0 {
+		g.msgTick--
+		if g.msgTick == 0 {
+			g.msg = ""
+		}
+	}
+	if g.shieldTick > 0 {
+		g.shieldTick--
+		if g.shieldTick == 0 {
+			g.playSFX(sfxBuffShieldOff)
+		}
+	}
+	if g.rapidTick > 0 {
+		g.rapidTick--
+		if g.rapidTick == 0 {
+			g.playSFX(sfxBuffRapidOff)
+		}
+	}
+
+	g.updatePlayer()
+	g.updateEnemies()
+	g.updateBullets()
+	g.updatePowerups()
+	g.updateExplosions()
+	g.cleanupWalls()
+	g.trySpawnRandomPowerup()
+
+	if g.fort.hp <= 0 || g.player.hp <= 0 {
+		if g.player.hp <= 0 {
+			g.playSFX(sfxDestroyPlayer)
+		}
+		g.applyDefeatEnergyState()
+		g.finishMatch(false)
+		g.playSFX(sfxLose)
+		return nil
+	}
+
+	if len(g.enemies) == 0 {
+		if g.waveDelay == 0 {
+			if g.wave >= g.maxWave {
+				g.finishMatch(true)
+				g.playSFX(sfxWin)
+			} else {
+				g.wave++
+				g.waveDelay = 130
+				g.setMessage(fmt.Sprintf("Prepare wave %d", g.wave), g.waveDelay)
+				g.playSFX(sfxWavePrepare)
+			}
+		} else {
+			g.waveDelay--
+			if g.waveDelay == 0 {
+				g.spawnWave(g.wave)
+				g.setMessage(fmt.Sprintf("Wave %d incoming", g.wave), 100)
+				g.playSFX(sfxWaveStart)
+			}
+		}
+	}
+	return nil
+}
+
+func (g *game) finishMatch(win bool) {
+	g.state = stateEnded
+	g.win = win
+	g.appendCurrentScoreHistory()
+}
+
+func (g *game) updateRankScrollInput() {
+	scroll := 0
+	if inpututil.IsKeyJustPressed(ebiten.KeyPageUp) {
+		scroll--
+	}
+	if inpututil.IsKeyJustPressed(ebiten.KeyPageDown) {
+		scroll++
+	}
+	_, wheelY := ebiten.Wheel()
+	if wheelY > 0.2 {
+		scroll--
+	} else if wheelY < -0.2 {
+		scroll++
+	}
+	if scroll != 0 {
+		g.rankScroll += scroll
+		g.clampRankScroll()
+	}
+}
+
+func (g *game) toggleHistoryView() {
+	g.showHistory = !g.showHistory
+	g.clampRankScroll()
+}
+
+func (g *game) anyHistoryDismissActionPressed() bool {
+	keys := []ebiten.Key{
+		ebiten.KeyR,
+		ebiten.KeyM,
+		ebiten.KeyP,
+		ebiten.KeyEnter,
+		ebiten.KeySpace,
+		ebiten.KeyJ,
+		ebiten.KeyArrowUp,
+		ebiten.KeyArrowDown,
+		ebiten.KeyArrowLeft,
+		ebiten.KeyArrowRight,
+		ebiten.KeyW,
+		ebiten.KeyA,
+		ebiten.KeyS,
+		ebiten.KeyD,
+		ebiten.Key1,
+		ebiten.Key2,
+		ebiten.Key3,
+	}
+	for _, k := range keys {
+		if isHistoryDismissKey(k) && inpututil.IsKeyJustPressed(k) {
+			return true
+		}
+	}
+	return false
+}
+
+func isHistoryDismissKey(k ebiten.Key) bool {
+	switch k {
+	case ebiten.KeyR, ebiten.KeyM, ebiten.KeyP, ebiten.KeyEnter, ebiten.KeySpace, ebiten.KeyJ,
+		ebiten.KeyArrowUp, ebiten.KeyArrowDown, ebiten.KeyArrowLeft, ebiten.KeyArrowRight,
+		ebiten.KeyW, ebiten.KeyA, ebiten.KeyS, ebiten.KeyD,
+		ebiten.Key1, ebiten.Key2, ebiten.Key3:
+		return true
+	default:
+		return false
+	}
+}
+
+func (g *game) restartIfAllowed() bool {
+	if g.state == stateMenu {
+		return false
+	}
+	g.startMatch()
+	return true
+}
+
+func (g *game) returnToMenu() {
+	g.state = stateMenu
+	g.paused = false
+	g.showHistory = false
+}
+
+func (g *game) togglePause() {
+	g.paused = !g.paused
+	g.playSFX(sfxPauseToggle)
+}
+
+func (g *game) enterMenuForConfig() {
+	if g.state == stateMenu {
+		return
+	}
+	g.menuResumeAvailable = true
+	g.menuReturnState = g.state
+	g.menuReturnPaused = g.paused
+	g.menuRequireRestart = false
+	g.state = stateMenu
+	g.paused = false
+	g.showHistory = false
+}
+
+func (g *game) leaveMenuByToggle() {
+	if !g.menuResumeAvailable {
+		return
+	}
+	if g.menuRequireRestart {
+		g.startMatch()
+		g.menuResumeAvailable = false
+		g.menuRequireRestart = false
+		return
+	}
+	g.state = g.menuReturnState
+	g.paused = g.menuReturnPaused
+	if g.state == stateEnded {
+		g.paused = false
+	}
+	g.showHistory = false
+	g.menuResumeAvailable = false
+	g.menuRequireRestart = false
+}
+
+func (g *game) markMenuRequireRestart() {
+	if g.menuResumeAvailable {
+		g.menuRequireRestart = true
+	}
+}
+
+func (g *game) cleanupWalls() {
+	keep := g.walls[:0]
+	for _, w := range g.walls {
+		if !w.destructive || w.hp > 0 {
+			keep = append(keep, w)
+		}
+	}
+	g.walls = keep
+}
+
+func (g *game) updateExplosions() {
+	alive := g.explosions[:0]
+	for _, ex := range g.explosions {
+		ex.life--
+		if ex.life > 0 {
+			alive = append(alive, ex)
+		}
+	}
+	g.explosions = alive
+}
+
+func (g *game) spawnExplosion(x, y, radius float64) {
+	g.explosions = append(g.explosions, &explosion{x: x, y: y, radius: radius, life: 16, max: 16})
+}
+
+func (g *game) applyDefeatEnergyState() {
+	if g.fort.hp <= 0 {
+		g.fort.hp = 0
+	}
+	if g.player.hp <= 0 {
+		g.player.hp = 0
+		g.player.turretHP = 0
+	}
+}
+
+func (g *game) tryHandleMagicOutcomeHotkeys() bool {
+	if g.state != statePlaying {
+		return false
+	}
+	if !isCtrlHeld() {
+		return false
+	}
+	if inpututil.IsKeyJustPressed(ebiten.Key1) {
+		g.finishMatch(true)
+		g.playSFX(sfxWin)
+		return true
+	}
+	if inpututil.IsKeyJustPressed(ebiten.Key0) {
+		g.fort.hp = 0
+		g.applyDefeatEnergyState()
+		g.finishMatch(false)
+		g.playSFX(sfxLose)
+		return true
+	}
+	return false
+}
+
+func isCtrlHeld() bool {
+	return ebiten.IsKeyPressed(ebiten.KeyControlLeft) || ebiten.IsKeyPressed(ebiten.KeyControlRight)
+}

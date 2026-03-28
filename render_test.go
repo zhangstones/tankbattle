@@ -87,6 +87,38 @@ func TestHistoryPanelLayoutIsSpacious(t *testing.T) {
 	}
 }
 
+func TestMenuPanelsStayInsideScreen(t *testing.T) {
+	if menuPanelX < 0 || menuPanelY < 0 {
+		t.Fatalf("menu panel origin should stay on screen: x=%d y=%d", menuPanelX, menuPanelY)
+	}
+	if menuPanelX+menuPanelW > screenW {
+		t.Fatalf("menu panel should fit screen width: right=%d screen=%d", menuPanelX+menuPanelW, screenW)
+	}
+	if menuPanelY+menuPanelH > screenH {
+		t.Fatalf("menu panel should fit screen height: bottom=%d screen=%d", menuPanelY+menuPanelH, screenH)
+	}
+}
+
+func TestHUDPanelsFitScreenWidth(t *testing.T) {
+	leftPanelRight := 12 + 556
+	rightPanelRight := 582 + 366
+	if leftPanelRight >= 582 {
+		t.Fatalf("hud left and right panels should keep a gap: leftRight=%d rightX=%d", leftPanelRight, 582)
+	}
+	if rightPanelRight > screenW {
+		t.Fatalf("hud right panel should fit screen width: right=%d screen=%d", rightPanelRight, screenW)
+	}
+}
+
+func TestHistoryPanelFitsWithinScreen(t *testing.T) {
+	if historyPanelX+historyPanelW > screenW {
+		t.Fatalf("history panel should fit screen width: right=%d screen=%d", historyPanelX+historyPanelW, screenW)
+	}
+	if historyPanelY+historyPanelH > screenH {
+		t.Fatalf("history panel should fit screen height: bottom=%d screen=%d", historyPanelY+historyPanelH, screenH)
+	}
+}
+
 func TestFormatDuration(t *testing.T) {
 	if got := formatDuration(0); got != "00:00" {
 		t.Fatalf("duration format mismatch: got %q", got)

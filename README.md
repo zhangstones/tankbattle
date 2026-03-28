@@ -103,62 +103,7 @@ $env:TANKBATTLE_DEBUG_API_ADDR = "127.0.0.1:18080"
 .\tankbattle_gui.exe
 ```
 
-启用后：
-
-- 游戏使用固定随机种子启动，避免菜单/HUD/地图快照漂移
-- 不读取用户本地设置，也不写入 `settings.json` / `history.json`
-- 调试请求在游戏主循环内执行，快照直接由游戏自身导出 PNG
-
-可用接口：
-
-- `GET /debug/state`
-  - 返回当前 `game_state`、`menu_index`、`difficulty`、`wave`、`score` 等调试状态
-- `POST /debug/actions`
-  - JSON 示例：
-
-```json
-{
-  "actions": ["menu.down", "menu.right", "menu.start"]
-}
-```
-
-- `POST /debug/snapshot`
-  - JSON 示例：
-
-```json
-{
-  "dir": "D:\\Workspace\\tankbattle\\snapshots",
-  "name": "menu-after-toggle.png"
-}
-```
-
-当前支持的动作包括：
-
-- `menu.up`
-- `menu.down`
-- `menu.left` / `menu.decrease`
-- `menu.right` / `menu.increase`
-- `menu.start`
-- `menu.easy` / `menu.set_easy`
-- `menu.normal` / `menu.set_normal`
-- `menu.hard` / `menu.set_hard`
-- `game.enter_menu`
-- `game.leave_menu`
-- `game.start_match`
-- `game.restart`
-- `game.pause`
-- `game.resume`
-- `game.toggle_history`
-- `scene.menu.default`
-- `scene.menu.hard`
-- `scene.menu.resume`
-- `scene.hud.playing`
-- `scene.hud.progressed`
-- `scene.hud.shield`
-- `scene.hud.history`
-- `scene.pause`
-- `scene.victory`
-- `scene.defeat`
+详细接口契约、动作清单、场景说明、快照规则和调用示例见 [TEST-API.md](TEST-API.md)。
 
 ## FAQ
 

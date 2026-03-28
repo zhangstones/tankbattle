@@ -67,6 +67,7 @@ func (g *game) Draw(screen *ebiten.Image) {
 
 	if g.state == stateMenu {
 		drawMenu(screen, g)
+		drawMatchIntroOverlay(screen, g)
 		return
 	}
 
@@ -106,6 +107,7 @@ func (g *game) Draw(screen *ebiten.Image) {
 
 	if g.showHistory {
 		drawHistoryPanel(screen, g)
+		drawMatchIntroOverlay(screen, g)
 		return
 	}
 
@@ -124,6 +126,7 @@ func (g *game) Draw(screen *ebiten.Image) {
 			drawStatusPanel(screen, endPanelW, endPanelH, uiSignalRed, "Defeat", "Fortress lost or player destroyed", "R restart  M menu")
 		}
 	}
+	drawMatchIntroOverlay(screen, g)
 }
 
 func drawMenu(screen *ebiten.Image, g *game) {
@@ -436,8 +439,6 @@ func playerCombinedEnergy(p tank) (int, int) {
 }
 
 func drawBackground(screen *ebiten.Image, g *game) {
-	_ = g
-
 	ebitenutil.DrawRect(screen, 0, 0, screenW, screenH, uiBackgroundBase)
 	for y := 0; y < screenH; y += 4 {
 		t := float64(y) / float64(screenH)
@@ -455,76 +456,67 @@ func drawBackground(screen *ebiten.Image, g *game) {
 		ebitenutil.DrawLine(screen, float64(x), 0, float64(x), screenH, alpha(uiGroundAsh, 12))
 	}
 
-	drawGroundScatter(screen)
+	seed := int64(20260328)
+	if g != nil && g.backgroundSeed != 0 {
+		seed = g.backgroundSeed
+	}
+	drawGroundScatter(screen, seed)
 }
 
-func drawGroundScatter(screen *ebiten.Image) {
-	stones := []struct {
-		x float64
-		y float64
-		r float64
-		c color.RGBA
-	}{
-		{54, 72, 2.2, alpha(uiGroundDust, 64)},
-		{92, 98, 1.4, alpha(uiGroundStone, 76)},
-		{126, 146, 1.8, alpha(uiGroundStone, 72)},
-		{188, 96, 1.5, alpha(uiGroundAsh, 70)},
-		{262, 138, 2.0, alpha(uiGroundDust, 62)},
-		{352, 84, 1.6, alpha(uiGroundStone, 70)},
-		{446, 126, 1.7, alpha(uiGroundAsh, 68)},
-		{548, 92, 2.1, alpha(uiGroundDust, 60)},
-		{632, 144, 1.6, alpha(uiGroundStone, 74)},
-		{744, 108, 1.8, alpha(uiGroundDust, 58)},
-		{824, 82, 2.0, alpha(uiGroundStone, 66)},
-		{884, 136, 1.5, alpha(uiGroundAsh, 70)},
-		{118, 232, 1.6, alpha(uiGroundDust, 58)},
-		{236, 274, 2.0, alpha(uiGroundStone, 68)},
-		{318, 226, 1.4, alpha(uiGroundAsh, 66)},
-		{418, 288, 1.9, alpha(uiGroundDust, 60)},
-		{526, 238, 1.5, alpha(uiGroundStone, 72)},
-		{646, 284, 1.8, alpha(uiGroundAsh, 68)},
-		{758, 248, 2.0, alpha(uiGroundDust, 60)},
-		{858, 292, 1.7, alpha(uiGroundStone, 70)},
-		{104, 398, 1.6, alpha(uiGroundDust, 56)},
-		{214, 454, 2.1, alpha(uiGroundStone, 72)},
-		{332, 386, 1.5, alpha(uiGroundAsh, 66)},
-		{438, 444, 1.9, alpha(uiGroundDust, 58)},
-		{548, 402, 1.5, alpha(uiGroundStone, 70)},
-		{666, 458, 2.2, alpha(uiGroundDust, 62)},
-		{774, 392, 1.7, alpha(uiGroundAsh, 68)},
-		{864, 448, 2.0, alpha(uiGroundStone, 70)},
-		{142, 548, 2.4, alpha(uiGroundAsh, 58)},
-		{236, 582, 1.9, alpha(uiGroundStone, 76)},
-		{348, 534, 1.7, alpha(uiGroundDust, 60)},
-		{462, 596, 2.1, alpha(uiGroundStone, 72)},
-		{586, 548, 1.6, alpha(uiGroundAsh, 70)},
-		{702, 588, 2.4, alpha(uiGroundDust, 62)},
-		{816, 546, 2.0, alpha(uiGroundStone, 74)},
-		{904, 606, 1.8, alpha(uiGroundAsh, 70)},
-	}
-	for _, stone := range stones {
-		drawCircle(screen, stone.x, stone.y, stone.r, stone.c)
+func drawGroundScatter(screen *ebiten.Image, seed int64) {
+	for i := 0; i < 46; i++ {
+		x := 24 + float64(scatterValue(seed, i, 0)%uint64(screenW-48))
+		y := 26 + float64(scatterValue(seed, i, 1)%uint64(screenH-52))
+		r := 1.1 + float64(scatterValue(seed, i, 2)%15)/10
+		alphaValue := uint8(50 + scatterValue(seed, i, 4)%28)
+		col := alpha(uiGroundDust, alphaValue)
+		switch scatterValue(seed, i, 3) % 3 {
+		case 1:
+			col = alpha(uiGroundStone, alphaValue+6)
+		case 2:
+			col = alpha(uiGroundAsh, alphaValue)
+		}
+		drawCircle(screen, x, y, r, col)
 	}
 
-	dustBands := []struct {
-		x float64
-		y float64
-		w float64
-		h float64
-		c color.RGBA
-	}{
-		{48, 214, 72, 2, alpha(uiGroundDust, 18)},
-		{164, 182, 54, 2, alpha(uiGroundAsh, 16)},
-		{284, 332, 64, 2, alpha(uiGroundDust, 18)},
-		{392, 248, 48, 2, alpha(uiGroundAsh, 16)},
-		{518, 426, 68, 2, alpha(uiGroundDust, 18)},
-		{648, 286, 56, 2, alpha(uiGroundAsh, 16)},
-		{738, 248, 74, 2, alpha(uiGroundDust, 18)},
-		{824, 516, 62, 2, alpha(uiGroundAsh, 18)},
+	for i := 0; i < 10; i++ {
+		x := 18 + float64(scatterValue(seed, i, 5)%uint64(screenW-132))
+		y := 34 + float64(scatterValue(seed, i, 6)%uint64(screenH-68))
+		w := 26 + float64(scatterValue(seed, i, 7)%52)
+		h := 2 + float64(scatterValue(seed, i, 8)%2)
+		col := alpha(uiGroundDust, uint8(14+scatterValue(seed, i, 9)%10))
+		if i%2 == 1 {
+			col = alpha(uiGroundAsh, uint8(14+scatterValue(seed, i, 10)%10))
+		}
+		ebitenutil.DrawRect(screen, x, y, w, h, col)
 	}
-	for _, band := range dustBands {
-		ebitenutil.DrawRect(screen, band.x, band.y, band.w, band.h, band.c)
+}
+
+func scatterValue(seed int64, index, salt int) uint64 {
+	x := uint64(seed)
+	if x == 0 {
+		x = 0x9e3779b97f4a7c15
 	}
+	x += 0x9e3779b97f4a7c15 * uint64(index+1)
+	x ^= uint64((salt + 1) * 0x85ebca6b)
+	x ^= x >> 33
+	x *= 0xff51afd7ed558ccd
+	x ^= x >> 33
+	x *= 0xc4ceb9fe1a85ec53
+	x ^= x >> 33
+	return x
+}
+
+func drawMatchIntroOverlay(screen *ebiten.Image, g *game) {
+	if g == nil || g.matchIntroTick <= 0 || g.matchIntroMax <= 0 {
+		return
+	}
+	rate := float64(g.matchIntroTick) / float64(g.matchIntroMax)
+	shade := uint8(104 * rate)
+	lineAlpha := uint8(42 * rate)
+	ebitenutil.DrawRect(screen, 0, 0, screenW, screenH, alpha(uiInk, shade))
+	ebitenutil.DrawRect(screen, 0, float64(screenH/2-1), screenW, 2, alpha(uiGroundDust, lineAlpha))
+	drawRectOutline(screen, 8, 8, screenW-16, screenH-16, 1, alpha(uiGroundGrid, uint8(28*rate)))
 }
 
 func drawWall(screen *ebiten.Image, w *wall) {

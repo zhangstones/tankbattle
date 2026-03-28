@@ -37,6 +37,7 @@ go build -ldflags="-H windowsgui" -o tankbattle_gui.exe .\cmd\tankbattle
 - `P`：暂停 / 继续
 - `M`：进入菜单；在菜单中再次按 `M` 返回上一状态
 - `R`：即时重开
+- `R` 或配置变更触发的新对局会带一个很轻的淡入过渡，避免画面硬切
 - `H`：显示 / 隐藏历史战绩面板（滚轮或 `PgUp/PgDn` 滚动）
 - `H` 切换历史面板时不弹出提示框
 - 历史面板打开后，按任意功能键会自动隐藏（如 `P/M/R/J/方向键/WASD/Enter/Space`）
@@ -65,6 +66,7 @@ go build -ldflags="-H windowsgui" -o tankbattle_gui.exe .\cmd\tankbattle
 - 包含敌方 AI、射击碰撞、道具增益与胜负结算
 - HUD 已重做为指挥面板风格，强化波次、分数、敌人数、堡垒血量与玩家状态的层次
 - 战场背景、墙体、堡垒、坦克、道具、子弹和爆炸特效均已增强，提升整体质感但不改变玩法
+- 简化版战场背景会在每局开始时重新采样沙石/尘土分布，同一局内保持稳定
 - 历史战绩可通过 `H` 面板查看，面板样式已与主菜单/HUD 统一
 - 音效资源内置打包：用户配置持久化到 `~/.tankbattle/settings.json`，历史战绩持久化到 `~/.tankbattle/history.json`
 - Windows 版本运行时窗口使用自定义程序图标

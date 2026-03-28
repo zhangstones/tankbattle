@@ -242,6 +242,26 @@ func TestStartMatchDoesNotResetAudioFrame(t *testing.T) {
 	}
 }
 
+func TestUpdateAdvancesMatchIntroTransition(t *testing.T) {
+	seed := int64(99)
+	g := newGameWithOptions(newGameOptions{
+		loadUserSettings: false,
+		persistUserData:  false,
+		randomSeed:       &seed,
+	})
+	g.startMatch()
+	before := g.matchIntroTick
+	if before <= 0 {
+		t.Fatalf("expected intro transition to be active")
+	}
+	if err := g.Update(); err != nil {
+		t.Fatalf("Update error: %v", err)
+	}
+	if g.matchIntroTick != before-1 {
+		t.Fatalf("intro transition should tick down, before=%d after=%d", before, g.matchIntroTick)
+	}
+}
+
 func TestPlaySFXUsesAudioFrame(t *testing.T) {
 	g := newGame()
 	mock := &mockSFXPlayer{enabled: true}

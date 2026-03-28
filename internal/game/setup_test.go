@@ -27,6 +27,32 @@ func TestStartMatchResetsCoreState(t *testing.T) {
 	if g.player.turretHP != playerTurretMaxHP || g.player.turretMaxHP != playerTurretMaxHP {
 		t.Fatalf("player turret hp should reset to %d/%d", playerTurretMaxHP, playerTurretMaxHP)
 	}
+	if g.matchIntroTick == 0 || g.matchIntroTick != g.matchIntroMax {
+		t.Fatalf("startMatch should begin intro transition, tick=%d max=%d", g.matchIntroTick, g.matchIntroMax)
+	}
+}
+
+func TestStartMatchResamplesBackgroundSeed(t *testing.T) {
+	seed := int64(321)
+	g := newGameWithOptions(newGameOptions{
+		loadUserSettings: false,
+		persistUserData:  false,
+		randomSeed:       &seed,
+	})
+	initial := g.backgroundSeed
+	g.startMatch()
+	first := g.backgroundSeed
+	g.startMatch()
+	second := g.backgroundSeed
+	if initial == 0 || first == 0 || second == 0 {
+		t.Fatalf("background seed should always be initialized")
+	}
+	if first == initial {
+		t.Fatalf("startMatch should resample background seed from menu seed")
+	}
+	if second == first {
+		t.Fatalf("restarting should resample background seed, got repeated %d", second)
+	}
 }
 
 func TestMaxWaveByDifficulty(t *testing.T) {

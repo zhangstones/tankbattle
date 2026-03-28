@@ -17,6 +17,9 @@ func (g *game) Update() error {
 	if g.debug != nil && g.debugFreeze {
 		return nil
 	}
+	if g.matchIntroTick > 0 {
+		g.matchIntroTick--
+	}
 
 	if inpututil.IsKeyJustPressed(ebiten.KeyH) {
 		g.toggleHistoryView()
@@ -213,6 +216,7 @@ func (g *game) returnToMenu() {
 	g.state = stateMenu
 	g.paused = false
 	g.showHistory = false
+	g.clearMatchIntro()
 }
 
 func (g *game) togglePause() {
@@ -231,6 +235,7 @@ func (g *game) enterMenuForConfig() {
 	g.state = stateMenu
 	g.paused = false
 	g.showHistory = false
+	g.clearMatchIntro()
 }
 
 func (g *game) leaveMenuByToggle() {

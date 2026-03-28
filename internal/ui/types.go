@@ -88,35 +88,38 @@ type ScoreEntry struct {
 }
 
 type Snapshot struct {
-	State                string
-	Player               Tank
-	Enemies              []Tank
-	Bullets              []Bullet
-	Walls                []Wall
-	Fort                 Fortress
-	Explosions           []Explosion
-	Powerups             []Powerup
-	Score                int
-	Win                  bool
-	Paused               bool
-	AudioFrame           int
-	Wave                 int
-	MaxWave              int
-	Message              string
-	ShieldTick           int
-	RapidTick            int
-	Difficulty           string
-	TotalWaves           int
-	MenuIndex            int
-	SoundEnabled         bool
-	SoundVolume          int
-	ScoreHistory         []ScoreEntry
-	RankScroll           int
-	ShowHistory          bool
-	MenuResumeAvailable  bool
-	MenuRequireRestart   bool
-	BestScore            int
-	CurrentRank          int
+	State               string
+	Player              Tank
+	Enemies             []Tank
+	Bullets             []Bullet
+	Walls               []Wall
+	Fort                Fortress
+	Explosions          []Explosion
+	Powerups            []Powerup
+	Score               int
+	Win                 bool
+	Paused              bool
+	AudioFrame          int
+	Wave                int
+	MaxWave             int
+	Message             string
+	ShieldTick          int
+	RapidTick           int
+	Difficulty          string
+	TotalWaves          int
+	MenuIndex           int
+	SoundEnabled        bool
+	SoundVolume         int
+	ScoreHistory        []ScoreEntry
+	RankScroll          int
+	ShowHistory         bool
+	MenuResumeAvailable bool
+	MenuRequireRestart  bool
+	BestScore           int
+	CurrentRank         int
+	BackgroundSeed      int64
+	MatchIntroTick      int
+	MatchIntroMax       int
 }
 
 const (
@@ -132,9 +135,9 @@ const (
 	TankSize    = 34.0
 	BulletSize  = 6.0
 
-	MenuItemCount    = 5
-	MatchWaveMin     = 1
-	MatchWaveMax     = 5
-	HUDRankingRows   = 10
+	MenuItemCount     = 5
+	MatchWaveMin      = 1
+	MatchWaveMax      = 5
+	HUDRankingRows    = 10
 	HUDRankingLineGap = 26
 )

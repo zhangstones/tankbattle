@@ -39,6 +39,7 @@ func newGameWithOptions(opts newGameOptions) *game {
 		persistUserData: opts.persistUserData,
 		audio:           opts.audio,
 		debug:           opts.debug,
+		backgroundSeed:  rand.Int63(),
 	}
 	if opts.loadUserSettings {
 		g.loadUserSettings()
@@ -79,6 +80,8 @@ func (g *game) startMatch() {
 	g.showHistory = false
 	g.menuResumeAvailable = false
 	g.menuRequireRestart = false
+	g.rollBackgroundSeed()
+	g.beginMatchIntro()
 
 	fortW := float64(gridSize * 2)
 	fortH := float64(gridSize)
@@ -109,6 +112,21 @@ func (g *game) startMatch() {
 	g.buildArenaObstacles()
 	g.spawnWave(g.wave)
 	g.setMessage(fmt.Sprintf("Wave %d incoming", g.wave), 120)
+}
+
+func (g *game) rollBackgroundSeed() {
+	g.backgroundSeed = rand.Int63()
+}
+
+func (g *game) beginMatchIntro() {
+	const introFrames = 16
+	g.matchIntroTick = introFrames
+	g.matchIntroMax = introFrames
+}
+
+func (g *game) clearMatchIntro() {
+	g.matchIntroTick = 0
+	g.matchIntroMax = 0
 }
 
 func (g *game) resetPlayerTapFrames() {

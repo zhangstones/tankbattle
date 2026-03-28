@@ -191,17 +191,20 @@ type game struct {
 	rapidTick          int
 	playerSilentFrames int
 
-	difficulty   difficulty
-	enemyBase    int
-	totalWaves   int
-	menuIndex    int
-	soundEnabled bool
-	soundVolume  int
-	audio        sfxPlayer
-	scoreHistory []scoreEntry
-	rankScroll   int
-	matchLogged  bool
-	showHistory  bool
+	difficulty     difficulty
+	enemyBase      int
+	totalWaves     int
+	menuIndex      int
+	soundEnabled   bool
+	soundVolume    int
+	audio          sfxPlayer
+	scoreHistory   []scoreEntry
+	rankScroll     int
+	matchLogged    bool
+	showHistory    bool
+	backgroundSeed int64
+	matchIntroTick int
+	matchIntroMax  int
 
 	menuResumeAvailable bool
 	menuReturnState     gameState

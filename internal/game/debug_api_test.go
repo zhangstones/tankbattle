@@ -182,6 +182,9 @@ func TestDebugScenesProvideStableFunctionalStates(t *testing.T) {
 	if g.state != statePlaying || g.shieldTick == 0 || g.rapidTick == 0 {
 		t.Fatalf("shield scene should enable active buffs: state=%v shield=%d rapid=%d", g.state, g.shieldTick, g.rapidTick)
 	}
+	if g.matchIntroTick != 0 || g.matchIntroMax != 0 {
+		t.Fatalf("debug scenes should clear intro transition for stable snapshots")
+	}
 
 	if err := g.executeDebugAction("scene.victory"); err != nil {
 		t.Fatalf("scene.victory failed: %v", err)

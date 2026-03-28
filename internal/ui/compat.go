@@ -151,6 +151,9 @@ type game struct {
 	showHistory         bool
 	menuResumeAvailable bool
 	menuRequireRestart  bool
+	backgroundSeed      int64
+	matchIntroTick      int
+	matchIntroMax       int
 
 	bestScoreValue   int
 	currentRankValue int
@@ -181,6 +184,9 @@ func newCompatGame(snapshot Snapshot) *game {
 		menuRequireRestart:  snapshot.MenuRequireRestart,
 		bestScoreValue:      snapshot.BestScore,
 		currentRankValue:    snapshot.CurrentRank,
+		backgroundSeed:      snapshot.BackgroundSeed,
+		matchIntroTick:      snapshot.MatchIntroTick,
+		matchIntroMax:       snapshot.MatchIntroMax,
 	}
 
 	g.enemies = make([]*tank, 0, len(snapshot.Enemies))

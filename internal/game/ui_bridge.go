@@ -43,6 +43,9 @@ func (g *game) uiSnapshot() gameui.Snapshot {
 		MenuRequireRestart:  g.menuRequireRestart,
 		BestScore:           g.bestScore(),
 		CurrentRank:         g.currentRank(),
+		BackgroundSeed:      g.backgroundSeed,
+		MatchIntroTick:      g.matchIntroTick,
+		MatchIntroMax:       g.matchIntroMax,
 	}
 
 	snapshot.Enemies = make([]gameui.Tank, 0, len(g.enemies))

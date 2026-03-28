@@ -287,6 +287,7 @@ func (g *game) setDebugScene(name string) {
 		g.msg = ""
 		g.msgTick = 0
 	}
+	g.clearMatchIntro()
 	g.debugFreeze = true
 }
 

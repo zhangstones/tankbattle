@@ -1,4 +1,4 @@
-package tankbattle
+package ui
 
 import (
 	"fmt"
@@ -130,13 +130,13 @@ func drawMenu(screen *ebiten.Image, g *game) {
 	layout := computeMenuLayout(menuItemCount)
 
 	const (
-		menuOptionsX      = 92
-		menuOptionsW      = 520
-		menuSidebarX      = 640
-		menuSidebarW      = 232
-		menuValuePillW    = 128
-		menuValuePillH    = 22
-		menuValueMeterW   = 128
+		menuOptionsX       = 92
+		menuOptionsW       = 520
+		menuSidebarX       = 640
+		menuSidebarW       = 232
+		menuValuePillW     = 128
+		menuValuePillH     = 22
+		menuValueMeterW    = 128
 		menuValueColumnGap = 16
 	)
 	menuValuePillX := float64(menuOptionsX + menuOptionsW - menuValuePillW - menuValueColumnGap)
@@ -242,6 +242,12 @@ func difficultyPresentation(d difficulty) (string, string, float64) {
 		return "NORMAL", "Balanced pace and enemy fire cadence.", 0.62
 	}
 }
+
+func Draw(screen *ebiten.Image, snapshot Snapshot) {
+	newCompatGame(snapshot).Draw(screen)
+}
+
+func Layout(_, _ int) (int, int) { return screenW, screenH }
 
 func drawHUD(screen *ebiten.Image, g *game) {
 	drawHUDCompetitive(screen, g)
@@ -458,7 +464,7 @@ func drawBackground(screen *ebiten.Image, g *game) {
 		ebitenutil.DrawLine(screen, float64(x), 0, float64(x), screenH, color.RGBA{72, 110, 118, 18})
 	}
 	for x := -screenH; x < screenW+screenH; x += 160 {
-		shiftX := float64((frame*2)%160)
+		shiftX := float64((frame * 2) % 160)
 		ebitenutil.DrawLine(screen, float64(x)+shiftX, 0, float64(x)+shiftX+140, screenH, color.RGBA{94, 130, 146, 9})
 	}
 
@@ -587,8 +593,6 @@ func drawBullet(screen *ebiten.Image, b *bullet) {
 	ebitenutil.DrawRect(screen, b.x-2, b.y-2, bulletSize+4, bulletSize+4, glow)
 	ebitenutil.DrawRect(screen, b.x, b.y, bulletSize, bulletSize, core)
 }
-
-func (g *game) Layout(_, _ int) (int, int) { return screenW, screenH }
 
 func drawExplosion(screen *ebiten.Image, ex *explosion, frame int) {
 	progress := 1 - float64(ex.life)/float64(maxInt(ex.max, 1))

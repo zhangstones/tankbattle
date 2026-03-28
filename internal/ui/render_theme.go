@@ -1,4 +1,4 @@
-package tankbattle
+package ui
 
 import (
 	"image/color"

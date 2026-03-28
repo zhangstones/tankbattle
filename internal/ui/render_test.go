@@ -1,4 +1,4 @@
-package tankbattle
+package ui
 
 import (
 	"strings"
@@ -164,12 +164,12 @@ func TestMenuSidebarAndDescriptionsStayWithinTextColumns(t *testing.T) {
 
 func TestRightHUDValuesDoNotOverlapThreatBox(t *testing.T) {
 	const (
-		rightHUDX      = 582
-		rightHUDW      = 366
-		vitalValueX    = 210
-		threatBoxW     = 82
-		threatInsetX   = 18
-		maxVitalWidth  = len("10/10") * 7
+		rightHUDX     = 582
+		rightHUDW     = 366
+		vitalValueX   = 210
+		threatBoxW    = 82
+		threatInsetX  = 18
+		maxVitalWidth = len("10/10") * 7
 	)
 	threatX := rightHUDX + rightHUDW - threatBoxW - threatInsetX
 	vitalValueRight := rightHUDX + vitalValueX + maxVitalWidth

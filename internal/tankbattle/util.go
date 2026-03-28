@@ -24,6 +24,13 @@ func clampInt(v, lo, hi int) int {
 	return v
 }
 
+func maxInt(a, b int) int {
+	if a > b {
+		return a
+	}
+	return b
+}
+
 func tankRect(t tank) rect { return rect{t.x, t.y, tankSize, tankSize} }
 
 func overlap(a, b rect) bool {

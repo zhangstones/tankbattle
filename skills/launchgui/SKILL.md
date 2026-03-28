@@ -1,15 +1,15 @@
 ---
 name: launchgui
-description: 通过 `guilauncher` 链路把 Windows GUI 程序启动到用户桌面会话；优先复用已有部署，不重复创建环境。
+description: 在 Windows 环境中处理 GUI 程序启动与桌面会话验证；优先尝试直接启动，只有在当前会话无法展示窗口时才回退到 `guilauncher`。
 ---
 
 # Launch GUI
 
 ## 适用场景
 
-- 当前代理会话无法直接展示 GUI，需要把程序拉起到用户桌面。
+- 需要启动 GUI 程序并确认窗口是否真正出现在用户桌面。
 - 需要验证 GUI 可执行文件是否能真正启动，而不是只构建成功。
-- 需要在不阻塞当前终端前台的前提下启动程序。
+- 直接启动可能因会话隔离失败，需要保留桌面会话回退方案。
 
 ## 不适用场景
 
@@ -17,9 +17,17 @@ description: 通过 `guilauncher` 链路把 Windows GUI 程序启动到用户桌
 - 当前环境本来就能直接显示 GUI，且无需桌面会话中转。
 - 用户未授权的高风险 GUI 启动或重启操作。
 
-## 默认实现
+## 默认策略
 
-本仓库默认复用 `guilauncher`：
+默认先直接启动目标程序。
+
+只有在以下情况之一出现时，才回退到 `guilauncher`：
+
+- 进程启动了，但窗口没有出现在用户桌面会话
+- 当前代理运行在非交互式会话中
+- 直接启动方式在当前环境不可用或不稳定
+
+本仓库保留 `guilauncher` 作为回退链路：
 
 - 默认基础目录：`D:\Workspace\guilauncher`
 - 默认任务名：`guilauncher`
@@ -48,13 +56,15 @@ description: 通过 `guilauncher` 链路把 Windows GUI 程序启动到用户桌
 
 ## 标准流程
 
-1. 先检查部署是否存在：
+1. 先直接启动目标 GUI，并确认窗口是否真正进入用户桌面会话。
+2. 若直接启动已满足需求，则不使用 `guilauncher`。
+3. 若直接启动失败，再检查 `guilauncher` 部署是否存在：
    - `launchgui.ps1`
    - `config.json`
    - 可选的计划任务 `guilauncher`
-2. 若缺失，用 `bootstrap.ps1` 补齐最小必要项。
-3. 确认 `config.json` 的 `apps` 中已注册目标应用。
-4. 写入 `run.json`，至少包含：
+4. 若缺失，用 `bootstrap.ps1` 补齐最小必要项。
+5. 确认 `config.json` 的 `apps` 中已注册目标应用。
+6. 写入 `run.json`，至少包含：
 
 ```json
 {
@@ -62,19 +72,19 @@ description: 通过 `guilauncher` 链路把 Windows GUI 程序启动到用户桌
 }
 ```
 
-5. 优先用计划任务触发：
+7. 优先用计划任务触发：
 
 ```powershell
 schtasks /run /tn "guilauncher"
 ```
 
-6. 若当前环境不可用 `schtasks`，回退到直接执行：
+8. 若当前环境不可用 `schtasks`，回退到直接执行 `launchgui.ps1`：
 
 ```powershell
 powershell.exe -ExecutionPolicy Bypass -File D:\Workspace\guilauncher\launchgui.ps1
 ```
 
-7. 查看日志确认实际结果。
+9. 查看日志确认实际结果。
 
 ## 新环境初始化
 
@@ -91,6 +101,7 @@ powershell -ExecutionPolicy Bypass -File .\skills\launchgui\scripts\bootstrap.ps
 
 ## 验证方式
 
+- 直接启动成功时，用户桌面会话中能看到目标 GUI，此时不需要强行走 `guilauncher`。
 - 日志中出现 `launch success app=<appId>`。
 - 若使用 `restart: true`，日志中应先出现重启记录，再出现成功启动。
 - 用户桌面会话中能看到目标 GUI。
@@ -105,6 +116,6 @@ powershell -ExecutionPolicy Bypass -File .\skills\launchgui\scripts\bootstrap.ps
 
 ## 完成标准
 
-- 目标 GUI 已通过 `guilauncher` 或明确回退路径成功拉起。
+- 目标 GUI 已通过直接启动，或在必要时通过 `guilauncher` 成功拉起。
 - 启动过程有日志证据可追踪。
-- 配置、脚本和任务复用关系清晰，没有重复部署平行链路。
+- 当需要回退时，配置、脚本和任务复用关系清晰，没有重复部署平行链路。

@@ -25,7 +25,7 @@
 - `feature-change-sync`
   - 面向功能变更联动，确保代码、测试和职责匹配文档同步更新。
 - `launchgui`
-  - 面向 Windows GUI 程序拉起与桌面会话验证，默认复用 `guilauncher` 链路。
+  - 面向 Windows GUI 程序拉起与桌面会话验证；默认先直接启动，必要时回退到 `guilauncher`。
 - `modular-maintainability`
   - 面向模块化设计、渐进式重构和高风险边界迁移。
 - `pillow-image-draw`
@@ -43,6 +43,7 @@
 - 任务以“改功能并保持文档/测试一致”为主时，优先用 `feature-change-sync`。
 - 任务包含提交整理时，再叠加 `commit-hygiene`。
 - 任务涉及 GUI 启动、界面验证或 golden 回归时，优先看 `launchgui`、`ui-layout-stability`、`ui-testing`。
+  其中 `launchgui` 主要用于直接启动失败后的桌面会话回退。
 - 任务涉及图像资产时，根据产出方式选择 `pillow-image-draw` 或 `qwen-image-assets`。
 
 ## 维护原则

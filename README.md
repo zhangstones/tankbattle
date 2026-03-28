@@ -104,6 +104,7 @@ $env:TANKBATTLE_DEBUG_API_ADDR = "127.0.0.1:18080"
 ```
 
 详细接口契约、动作清单、场景说明、快照规则和调用示例见 [TEST-API.md](TEST-API.md)。
+功能验收案例、界面回归案例和后续维护约定见 [TEST-CASES.md](TEST-CASES.md)。
 
 ## FAQ
 

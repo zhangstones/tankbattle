@@ -230,19 +230,19 @@ func drawMenu(screen *ebiten.Image, g *game) {
 
 	drawInsetPanel(screen, menuSidebarX+16, 306, 200, 154, uiSignalAmber, false, g.audioFrame)
 	ebitenutil.DebugPrintAt(screen, "READINESS", menuSidebarX+34, 322)
-	ebitenutil.DebugPrintAt(screen, "Move with WASD or arrows.", menuSidebarX+34, 346)
-	ebitenutil.DebugPrintAt(screen, "Double-tap to rotate hull.", menuSidebarX+34, 364)
-	ebitenutil.DebugPrintAt(screen, "J or Space fires the turret.", menuSidebarX+34, 382)
+	ebitenutil.DebugPrintAt(screen, "Move: WASD/arrows.", menuSidebarX+34, 346)
+	ebitenutil.DebugPrintAt(screen, "Rotate: double-tap.", menuSidebarX+34, 364)
+	ebitenutil.DebugPrintAt(screen, "Fire: J/Space.", menuSidebarX+34, 382)
 	if g.menuResumeAvailable {
-		ebitenutil.DebugPrintAt(screen, "Returning via M resumes the current run", menuSidebarX+34, 414)
+		ebitenutil.DebugPrintAt(screen, "M returns to run.", menuSidebarX+34, 414)
 		if g.menuRequireRestart {
-			ebitenutil.DebugPrintAt(screen, "Difficulty or waves changed: resume restarts.", menuSidebarX+34, 432)
+			ebitenutil.DebugPrintAt(screen, "Changed setup restarts.", menuSidebarX+34, 432)
 		} else {
-			ebitenutil.DebugPrintAt(screen, "Only audio changes: resume keeps the match.", menuSidebarX+34, 432)
+			ebitenutil.DebugPrintAt(screen, "Audio-only keeps run.", menuSidebarX+34, 432)
 		}
 	} else {
-		ebitenutil.DebugPrintAt(screen, "Press Enter to deploy immediately.", menuSidebarX+34, 414)
-		ebitenutil.DebugPrintAt(screen, "The interface was rebuilt for clarity.", menuSidebarX+34, 432)
+		ebitenutil.DebugPrintAt(screen, "Press Enter to deploy.", menuSidebarX+34, 414)
+		ebitenutil.DebugPrintAt(screen, "Cleaner UI, same play.", menuSidebarX+34, 432)
 	}
 
 	ebitenutil.DebugPrintAt(screen, "Tip: R restarts instantly during battle, H opens score history.", 110, 544)
@@ -255,11 +255,11 @@ func drawMenu(screen *ebiten.Image, g *game) {
 func difficultyPresentation(d difficulty) (string, string, float64) {
 	switch d {
 	case diffEasy:
-		return "EASY", "Lower pressure and slower enemies for recovery-focused play.", 0.3
+		return "EASY", "Slower enemies and lighter mission pressure.", 0.3
 	case diffHard:
-		return "HARD", "Aggressive waves, higher HP and tighter reaction windows.", 1
+		return "HARD", "Faster waves, higher HP, tighter pressure.", 1
 	default:
-		return "NORMAL", "Balanced speed, HP and fire cadence across the mission.", 0.62
+		return "NORMAL", "Balanced pace and enemy fire cadence.", 0.62
 	}
 }
 
@@ -319,6 +319,17 @@ func drawHUDCompetitive(screen *ebiten.Image, g *game) {
 }
 
 func drawHUDVitals(screen *ebiten.Image, g *game, x, y, w, diffRate float64) {
+	const (
+		vitalBarW      = 178.0
+		vitalValueX    = 210
+		threatBoxW     = 82.0
+		threatBoxH     = 28.0
+		threatInsetX   = 18.0
+		threatMeterY   = 46.0
+		threatHistoryY = 64
+	)
+	threatX := x + w - threatBoxW - threatInsetX
+
 	ebitenutil.DebugPrintAt(screen, "FORTRESS INTEGRITY", int(x)+18, int(y)+16)
 	fortRate := float64(g.fort.hp) / float64(maxInt(g.fort.maxHP, 1))
 	if fortRate < 0 {
@@ -328,19 +339,19 @@ func drawHUDVitals(screen *ebiten.Image, g *game, x, y, w, diffRate float64) {
 	if fortRate < 0.45 {
 		fortFill = uiSignalRed
 	}
-	drawEnergyBar(screen, x+18, y+34, 204, 14, fortRate, fortFill, "", fortRate < 0.3)
-	ebitenutil.DebugPrintAt(screen, fmt.Sprintf("%d/%d", g.fort.hp, g.fort.maxHP), int(x)+238, int(y)+33)
+	drawEnergyBar(screen, x+18, y+34, vitalBarW, 14, fortRate, fortFill, "", fortRate < 0.3)
+	ebitenutil.DebugPrintAt(screen, fmt.Sprintf("%d/%d", g.fort.hp, g.fort.maxHP), int(x)+vitalValueX, int(y)+33)
 
 	tankNow, tankMax := playerCombinedEnergy(g.player)
 	tankRate := float64(tankNow) / float64(maxInt(tankMax, 1))
 	ebitenutil.DebugPrintAt(screen, "PLAYER ARMOR", int(x)+18, int(y)+58)
-	drawEnergyBar(screen, x+18, y+76, 204, 14, tankRate, uiSignalGreen, "", tankRate < 0.28)
-	ebitenutil.DebugPrintAt(screen, fmt.Sprintf("%d/%d", tankNow, tankMax), int(x)+238, int(y)+75)
+	drawEnergyBar(screen, x+18, y+76, vitalBarW, 14, tankRate, uiSignalGreen, "", tankRate < 0.28)
+	ebitenutil.DebugPrintAt(screen, fmt.Sprintf("%d/%d", tankNow, tankMax), int(x)+vitalValueX, int(y)+75)
 
-	drawInsetPanel(screen, x+w-118, y+14, 96, 30, uiSignalAmber, false, g.audioFrame)
-	ebitenutil.DebugPrintAt(screen, "THREAT", centeredTextX("THREAT", int(x+w-118), 96), centeredTextY(int(y+14), 30, menuTextHeight))
-	drawMeter(screen, x+w-118, y+48, 96, 10, diffRate, uiSignalAmber)
-	ebitenutil.DebugPrintAt(screen, "H history", centeredTextX("H history", int(x+w-118), 96), int(y)+66)
+	drawInsetPanel(screen, threatX, y+14, threatBoxW, threatBoxH, uiSignalAmber, false, g.audioFrame)
+	ebitenutil.DebugPrintAt(screen, "THREAT", centeredTextX("THREAT", int(threatX), int(threatBoxW)), centeredTextY(int(y+14), int(threatBoxH), menuTextHeight))
+	drawMeter(screen, threatX, y+threatMeterY, threatBoxW, 10, diffRate, uiSignalAmber)
+	ebitenutil.DebugPrintAt(screen, "H history", centeredTextX("H history", int(threatX), int(threatBoxW)), int(y)+threatHistoryY)
 }
 
 func drawBoldText(screen *ebiten.Image, s string, x, y int) {

@@ -119,6 +119,62 @@ func TestHistoryPanelFitsWithinScreen(t *testing.T) {
 	}
 }
 
+func TestMenuSidebarAndDescriptionsStayWithinTextColumns(t *testing.T) {
+	const (
+		menuOptionsX        = 92
+		menuOptionsW        = 520
+		menuValuePillW      = 128
+		menuValueColumnGap  = 16
+		menuDescTextX       = 116
+		menuSidebarX        = 640
+		menuSidebarTextX    = 674
+		menuSidebarPanelW   = 200
+		menuSidebarRightPad = 18
+	)
+	menuValuePillX := menuOptionsX + menuOptionsW - menuValuePillW - menuValueColumnGap
+	menuDescMaxWidth := menuValuePillX - menuDescTextX - 16
+	for _, desc := range []string{
+		"Slower enemies and lighter mission pressure.",
+		"Balanced pace and enemy fire cadence.",
+		"Faster waves, higher HP, tighter pressure.",
+	} {
+		if textWidth(desc) > menuDescMaxWidth {
+			t.Fatalf("menu description should fit value column gap: %q width=%d limit=%d", desc, textWidth(desc), menuDescMaxWidth)
+		}
+	}
+	sidebarMaxWidth := (menuSidebarX + 16 + menuSidebarPanelW) - menuSidebarTextX - menuSidebarRightPad
+	for _, line := range []string{
+		"Move: WASD/arrows.",
+		"Rotate: double-tap.",
+		"Fire: J/Space.",
+		"M returns to run.",
+		"Changed setup restarts.",
+		"Audio-only keeps run.",
+		"Press Enter to deploy.",
+		"Cleaner UI, same play.",
+	} {
+		if textWidth(line) > sidebarMaxWidth {
+			t.Fatalf("sidebar text should fit sidebar card: %q width=%d limit=%d", line, textWidth(line), sidebarMaxWidth)
+		}
+	}
+}
+
+func TestRightHUDValuesDoNotOverlapThreatBox(t *testing.T) {
+	const (
+		rightHUDX      = 582
+		rightHUDW      = 366
+		vitalValueX    = 210
+		threatBoxW     = 82
+		threatInsetX   = 18
+		maxVitalWidth  = len("10/10") * 7
+	)
+	threatX := rightHUDX + rightHUDW - threatBoxW - threatInsetX
+	vitalValueRight := rightHUDX + vitalValueX + maxVitalWidth
+	if vitalValueRight >= threatX {
+		t.Fatalf("right hud values should stay left of threat box: valueRight=%d threatX=%d", vitalValueRight, threatX)
+	}
+}
+
 func TestFormatDuration(t *testing.T) {
 	if got := formatDuration(0); got != "00:00" {
 		t.Fatalf("duration format mismatch: got %q", got)

@@ -448,9 +448,6 @@ func drawBackground(screen *ebiten.Image, g *game) {
 		ebitenutil.DrawRect(screen, 0, float64(y), screenW, 4, col)
 	}
 
-	ebitenutil.DrawRect(screen, 0, float64(screenH-140), screenW, 140, alpha(uiGroundAsh, 14))
-	ebitenutil.DrawRect(screen, 0, float64(screenH-84), screenW, 84, alpha(uiGroundDust, 10))
-
 	for y := 0; y <= screenH; y += gridSize {
 		ebitenutil.DrawLine(screen, 0, float64(y), screenW, float64(y), alpha(uiGroundGrid, 20))
 	}
@@ -468,16 +465,42 @@ func drawGroundScatter(screen *ebiten.Image) {
 		r float64
 		c color.RGBA
 	}{
-		{64, 76, 2.4, alpha(uiGroundDust, 60)},
-		{118, 142, 1.8, alpha(uiGroundStone, 72)},
-		{874, 88, 2.2, alpha(uiGroundStone, 64)},
-		{794, 168, 1.6, alpha(uiGroundDust, 54)},
-		{146, 524, 2.6, alpha(uiGroundAsh, 56)},
-		{238, 562, 2.0, alpha(uiGroundStone, 74)},
-		{704, 516, 2.8, alpha(uiGroundDust, 60)},
-		{816, 548, 2.2, alpha(uiGroundStone, 70)},
-		{902, 610, 2.0, alpha(uiGroundAsh, 68)},
-		{476, 612, 2.4, alpha(uiGroundDust, 58)},
+		{54, 72, 2.2, alpha(uiGroundDust, 64)},
+		{92, 98, 1.4, alpha(uiGroundStone, 76)},
+		{126, 146, 1.8, alpha(uiGroundStone, 72)},
+		{188, 96, 1.5, alpha(uiGroundAsh, 70)},
+		{262, 138, 2.0, alpha(uiGroundDust, 62)},
+		{352, 84, 1.6, alpha(uiGroundStone, 70)},
+		{446, 126, 1.7, alpha(uiGroundAsh, 68)},
+		{548, 92, 2.1, alpha(uiGroundDust, 60)},
+		{632, 144, 1.6, alpha(uiGroundStone, 74)},
+		{744, 108, 1.8, alpha(uiGroundDust, 58)},
+		{824, 82, 2.0, alpha(uiGroundStone, 66)},
+		{884, 136, 1.5, alpha(uiGroundAsh, 70)},
+		{118, 232, 1.6, alpha(uiGroundDust, 58)},
+		{236, 274, 2.0, alpha(uiGroundStone, 68)},
+		{318, 226, 1.4, alpha(uiGroundAsh, 66)},
+		{418, 288, 1.9, alpha(uiGroundDust, 60)},
+		{526, 238, 1.5, alpha(uiGroundStone, 72)},
+		{646, 284, 1.8, alpha(uiGroundAsh, 68)},
+		{758, 248, 2.0, alpha(uiGroundDust, 60)},
+		{858, 292, 1.7, alpha(uiGroundStone, 70)},
+		{104, 398, 1.6, alpha(uiGroundDust, 56)},
+		{214, 454, 2.1, alpha(uiGroundStone, 72)},
+		{332, 386, 1.5, alpha(uiGroundAsh, 66)},
+		{438, 444, 1.9, alpha(uiGroundDust, 58)},
+		{548, 402, 1.5, alpha(uiGroundStone, 70)},
+		{666, 458, 2.2, alpha(uiGroundDust, 62)},
+		{774, 392, 1.7, alpha(uiGroundAsh, 68)},
+		{864, 448, 2.0, alpha(uiGroundStone, 70)},
+		{142, 548, 2.4, alpha(uiGroundAsh, 58)},
+		{236, 582, 1.9, alpha(uiGroundStone, 76)},
+		{348, 534, 1.7, alpha(uiGroundDust, 60)},
+		{462, 596, 2.1, alpha(uiGroundStone, 72)},
+		{586, 548, 1.6, alpha(uiGroundAsh, 70)},
+		{702, 588, 2.4, alpha(uiGroundDust, 62)},
+		{816, 546, 2.0, alpha(uiGroundStone, 74)},
+		{904, 606, 1.8, alpha(uiGroundAsh, 70)},
 	}
 	for _, stone := range stones {
 		drawCircle(screen, stone.x, stone.y, stone.r, stone.c)
@@ -490,10 +513,14 @@ func drawGroundScatter(screen *ebiten.Image) {
 		h float64
 		c color.RGBA
 	}{
-		{52, 214, 104, 3, alpha(uiGroundDust, 22)},
-		{736, 248, 126, 3, alpha(uiGroundDust, 18)},
-		{182, 454, 94, 3, alpha(uiGroundAsh, 20)},
-		{624, 604, 118, 4, alpha(uiGroundAsh, 24)},
+		{48, 214, 72, 2, alpha(uiGroundDust, 18)},
+		{164, 182, 54, 2, alpha(uiGroundAsh, 16)},
+		{284, 332, 64, 2, alpha(uiGroundDust, 18)},
+		{392, 248, 48, 2, alpha(uiGroundAsh, 16)},
+		{518, 426, 68, 2, alpha(uiGroundDust, 18)},
+		{648, 286, 56, 2, alpha(uiGroundAsh, 16)},
+		{738, 248, 74, 2, alpha(uiGroundDust, 18)},
+		{824, 516, 62, 2, alpha(uiGroundAsh, 18)},
 	}
 	for _, band := range dustBands {
 		ebitenutil.DrawRect(screen, band.x, band.y, band.w, band.h, band.c)

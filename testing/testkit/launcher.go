@@ -121,15 +121,23 @@ func (s *Session) Close() error {
 	}
 	select {
 	case err := <-s.exitCh:
-		return normalizeExitErr(err)
+		return err
 	default:
 	}
 	if err := s.cmd.Process.Kill(); err != nil {
+		if errors.Is(err, os.ErrProcessDone) {
+			select {
+			case waitErr := <-s.exitCh:
+				return waitErr
+			default:
+				return nil
+			}
+		}
 		return err
 	}
 	select {
 	case err := <-s.exitCh:
-		return normalizeExitErr(err)
+		return normalizeKilledExitErr(err)
 	case <-time.After(5 * time.Second):
 		return fmt.Errorf("timed out waiting for debug game to exit")
 	}
@@ -179,8 +187,10 @@ func findRepoRoot() (string, error) {
 }
 
 func ensureBuiltBinary(rootDir string) (string, error) {
-	if existing, ok := existingE2EBinary(rootDir); ok {
-		return existing, nil
+	if configured, ok, err := configuredE2EBinary(rootDir); err != nil {
+		return "", err
+	} else if ok {
+		return configured, nil
 	}
 	builtBinaryOnce.Do(func() {
 		binDir := filepath.Join(rootDir, ".tmp", "testing", "bin")
@@ -200,24 +210,17 @@ func ensureBuiltBinary(rootDir string) (string, error) {
 	return builtBinaryPath, builtBinaryErr
 }
 
-func existingE2EBinary(rootDir string) (string, bool) {
+func configuredE2EBinary(rootDir string) (string, bool, error) {
 	if candidate := strings.TrimSpace(os.Getenv("TANKBATTLE_E2E_BINARY")); candidate != "" {
 		if !filepath.IsAbs(candidate) {
 			candidate = filepath.Join(rootDir, candidate)
 		}
 		if fileExists(candidate) {
-			return candidate, true
+			return candidate, true, nil
 		}
+		return "", false, fmt.Errorf("configured TANKBATTLE_E2E_BINARY does not exist: %q", candidate)
 	}
-	for _, candidate := range []string{
-		filepath.Join(rootDir, "tankbattle_gui.exe"),
-		filepath.Join(rootDir, "tankbattle.exe"),
-	} {
-		if fileExists(candidate) {
-			return candidate, true
-		}
-	}
-	return "", false
+	return "", false, nil
 }
 
 func fileExists(path string) bool {
@@ -234,7 +237,7 @@ func allocateLocalAddr() (string, error) {
 	return ln.Addr().String(), nil
 }
 
-func normalizeExitErr(err error) error {
+func normalizeKilledExitErr(err error) error {
 	if err == nil {
 		return nil
 	}

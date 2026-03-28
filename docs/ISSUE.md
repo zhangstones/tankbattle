@@ -66,3 +66,55 @@ go test ./testing/functional ./testing/ui
 
 - 菜单 golden 差异：已同步完成
 - GUI E2E 未进默认回归：已确认，属于流程缺口
+
+## 2026-03-28 Review 待办补充
+
+来源：
+
+- reviewer 对新增 E2E / UI bridge 相关改动的审查结论
+
+### 3. E2E 会话可能误用仓库根目录旧可执行文件
+
+状态：`已完成`
+
+处理结论：
+
+- `testing/testkit/launcher.go` 已改为只接受显式指定的 `TANKBATTLE_E2E_BINARY`
+- 未指定 `TANKBATTLE_E2E_BINARY` 时，E2E 会话会统一构建并复用 `.tmp/testing/bin/tankbattle-e2e.exe`
+- 不再默认复用仓库根目录已有的 `tankbattle_gui.exe` / `tankbattle.exe`
+- 已补充 `testing/testkit/launcher_test.go`，覆盖相对路径解析、缺失路径报错和默认不复用仓库产物
+
+验证：
+
+- `go test ./...`
+- `$env:TANKBATTLE_E2E='1'; $env:TANKBATTLE_E2E_BINARY='tankbattle_gui.exe'; go test ./testing/functional ./testing/ui`
+
+### 4. E2E 清理阶段会把子进程异常退出当作正常结束
+
+状态：`已完成`
+
+处理结论：
+
+- `Session.Close()` 现在会在子进程已经自行退出时直接返回原始错误，不再吞掉异常退出
+- 仅在 `Close()` 主动 `Kill()` 子进程后的清理路径上，才会归一化 kill 产生的退出错误
+- 已补充 `testing/testkit/launcher_test.go`，覆盖“异常退出必须报错”和“主动 kill 不应报错”两条回归用例
+
+验证：
+
+- `go test ./...`
+- `$env:TANKBATTLE_E2E='1'; $env:TANKBATTLE_E2E_BINARY='tankbattle_gui.exe'; go test ./testing/functional ./testing/ui`
+
+### 5. UI bridge 每帧重建完整渲染模型，存在额外分配压力
+
+状态：`已完成`
+
+确认结论：
+
+- `internal/game/ui_bridge.go` 已改为复用 `uiSnapshot` 缓冲区，避免每帧重新分配敌人、子弹、墙体、爆炸、道具、历史等切片
+- `internal/ui` 兼容层已改为对象池 + 值切片复用，不再每帧重建独立指针切片
+- 当前仍保留快照边界，继续满足调试 API 与 UI 回归快照的稳定性要求
+
+结论：
+
+- 该项已按“可复用缓冲区 + 减少重复映射”完成收敛
+- 不再作为待处理代码缺陷保留

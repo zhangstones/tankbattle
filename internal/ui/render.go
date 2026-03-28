@@ -436,42 +436,67 @@ func playerCombinedEnergy(p tank) (int, int) {
 }
 
 func drawBackground(screen *ebiten.Image, g *game) {
-	frame := 0
-	if g != nil {
-		frame = g.audioFrame
-	}
+	_ = g
 
-	for y := 0; y < screenH; y += 2 {
+	ebitenutil.DrawRect(screen, 0, 0, screenW, screenH, uiBackgroundBase)
+	for y := 0; y < screenH; y += 4 {
 		t := float64(y) / float64(screenH)
 		col := blend(uiBackgroundTop, uiBackgroundBase, t)
-		if t > 0.45 {
-			col = blend(uiBackgroundMid, uiBackgroundBase, (t-0.45)/0.55)
+		if t > 0.62 {
+			col = blend(uiBackgroundBase, uiBackgroundMid, (t-0.62)/0.38)
 		}
-		ebitenutil.DrawRect(screen, 0, float64(y), screenW, 2, col)
+		ebitenutil.DrawRect(screen, 0, float64(y), screenW, 4, col)
 	}
 
-	for r := 210.0; r >= 60; r -= 26 {
-		a := uint8((r / 210.0) * 24)
-		drawCircle(screen, float64(screenW)/2, float64(screenH)-88, r, color.RGBA{240, 182, 92, a})
+	ebitenutil.DrawRect(screen, 0, float64(screenH-140), screenW, 140, alpha(uiGroundAsh, 14))
+	ebitenutil.DrawRect(screen, 0, float64(screenH-84), screenW, 84, alpha(uiGroundDust, 10))
+
+	for y := 0; y <= screenH; y += gridSize {
+		ebitenutil.DrawLine(screen, 0, float64(y), screenW, float64(y), alpha(uiGroundGrid, 20))
+	}
+	for x := 0; x <= screenW; x += gridSize {
+		ebitenutil.DrawLine(screen, float64(x), 0, float64(x), screenH, alpha(uiGroundAsh, 12))
 	}
 
-	gridOffset := float64(frame%(gridSize*2)) * 0.35
-	for y := -gridSize; y < screenH+gridSize; y += gridSize {
-		yy := float64(y) + gridOffset
-		ebitenutil.DrawLine(screen, 0, yy, screenW, yy, color.RGBA{88, 128, 120, 24})
+	drawGroundScatter(screen)
+}
+
+func drawGroundScatter(screen *ebiten.Image) {
+	stones := []struct {
+		x float64
+		y float64
+		r float64
+		c color.RGBA
+	}{
+		{64, 76, 2.4, alpha(uiGroundDust, 60)},
+		{118, 142, 1.8, alpha(uiGroundStone, 72)},
+		{874, 88, 2.2, alpha(uiGroundStone, 64)},
+		{794, 168, 1.6, alpha(uiGroundDust, 54)},
+		{146, 524, 2.6, alpha(uiGroundAsh, 56)},
+		{238, 562, 2.0, alpha(uiGroundStone, 74)},
+		{704, 516, 2.8, alpha(uiGroundDust, 60)},
+		{816, 548, 2.2, alpha(uiGroundStone, 70)},
+		{902, 610, 2.0, alpha(uiGroundAsh, 68)},
+		{476, 612, 2.4, alpha(uiGroundDust, 58)},
 	}
-	for x := 0; x < screenW+gridSize; x += gridSize {
-		ebitenutil.DrawLine(screen, float64(x), 0, float64(x), screenH, color.RGBA{72, 110, 118, 18})
-	}
-	for x := -screenH; x < screenW+screenH; x += 160 {
-		shiftX := float64((frame * 2) % 160)
-		ebitenutil.DrawLine(screen, float64(x)+shiftX, 0, float64(x)+shiftX+140, screenH, color.RGBA{94, 130, 146, 9})
+	for _, stone := range stones {
+		drawCircle(screen, stone.x, stone.y, stone.r, stone.c)
 	}
 
-	for i := 0; i < 12; i++ {
-		x := float64((i*97 + frame*3) % screenW)
-		y := float64((i*53 + frame*2) % screenH)
-		ebitenutil.DrawRect(screen, x, y, 2, 2, color.RGBA{196, 224, 214, 20})
+	dustBands := []struct {
+		x float64
+		y float64
+		w float64
+		h float64
+		c color.RGBA
+	}{
+		{52, 214, 104, 3, alpha(uiGroundDust, 22)},
+		{736, 248, 126, 3, alpha(uiGroundDust, 18)},
+		{182, 454, 94, 3, alpha(uiGroundAsh, 20)},
+		{624, 604, 118, 4, alpha(uiGroundAsh, 24)},
+	}
+	for _, band := range dustBands {
+		ebitenutil.DrawRect(screen, band.x, band.y, band.w, band.h, band.c)
 	}
 }
 

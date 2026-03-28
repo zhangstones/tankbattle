@@ -3,8 +3,7 @@
 ## 1. 目标
 
 当前技术实现不适合继续追求复杂背景重设计。
-
-本轮目标改为：
+本轮目标调整为：
 
 - 用低风险、低复杂度方案，把背景稳定收敛到“地面坦克战场”语义。
 - 背景只提供基础氛围，不承担复杂美术表达。
@@ -13,7 +12,6 @@
 ## 2. 采用方案
 
 采用“纯色背景 + 弱网格 + 少量沙石模拟”方案。
-
 具体要求：
 
 - 纯色地表底色为主，不再追求复杂地貌分层。
@@ -38,16 +36,16 @@
 
 ## 4. 待办
 
-- [ ] 调整 `internal/ui/render_theme.go` 的背景色板，收敛为地表纯色系
-- [ ] 重写 `internal/ui/render.go` 的背景绘制逻辑，只保留纯色底、弱网格和少量沙石点缀
-- [ ] 确认菜单、HUD、暂停框、胜负框和玩法逻辑不受影响
-- [ ] 更新受影响的 UI snapshot golden
-- [ ] 执行 `go test ./...`
-- [ ] 执行 `go build ./...`
-- [ ] 构建 `tankbattle_gui.exe`
-- [ ] 执行 GUI 启动验证
-- [ ] 执行真实 GUI E2E：`go test ./testing/functional ./testing/ui`
-- [ ] 提交代码
+- [x] 调整 `internal/ui/render_theme.go` 的背景色板，收敛为地表纯色系
+- [x] 重写 `internal/ui/render.go` 的背景绘制逻辑，只保留纯色底、弱网格和少量沙石点缀
+- [x] 确认菜单、HUD、暂停框、胜负框和玩法逻辑不受影响
+- [x] 更新受影响的 UI snapshot golden
+- [x] 执行 `go test ./...`
+- [x] 执行 `go build ./...`
+- [x] 构建 `tankbattle_gui.exe`
+- [x] 执行 GUI 启动验证
+- [x] 执行真实 GUI E2E：`go test ./testing/functional ./testing/ui`
+- [x] 提交代码
 
 ## 5. 验收标准
 

@@ -21,9 +21,13 @@ var (
 	uiSignalOrange   = color.RGBA{255, 152, 92, 224}
 	uiMutedFill      = color.RGBA{18, 24, 32, 218}
 	uiMutedLine      = color.RGBA{56, 80, 98, 180}
-	uiBackgroundTop  = color.RGBA{8, 18, 30, 255}
-	uiBackgroundMid  = color.RGBA{17, 36, 44, 255}
-	uiBackgroundBase = color.RGBA{38, 52, 44, 255}
+	uiBackgroundTop  = color.RGBA{96, 88, 68, 255}
+	uiBackgroundMid  = color.RGBA{96, 88, 68, 255}
+	uiBackgroundBase = color.RGBA{96, 88, 68, 255}
+	uiGroundGrid     = color.RGBA{142, 132, 102, 255}
+	uiGroundStone    = color.RGBA{166, 150, 112, 255}
+	uiGroundAsh      = color.RGBA{74, 66, 50, 255}
+	uiGroundDust     = color.RGBA{122, 112, 84, 255}
 )
 
 func alpha(c color.RGBA, a uint8) color.RGBA {

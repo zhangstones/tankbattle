@@ -71,8 +71,8 @@ func (g *game) Draw(screen *ebiten.Image) {
 		return
 	}
 
-	for _, w := range g.walls {
-		drawWall(screen, w)
+	for i := range g.walls {
+		drawWall(screen, &g.walls[i])
 	}
 	drawFortress(screen, g.fort)
 
@@ -82,25 +82,26 @@ func (g *game) Draw(screen *ebiten.Image) {
 		drawCircle(screen, g.player.x+tankSize/2, g.player.y+tankSize/2, 29, color.RGBA{86, 182, 255, pulseAlpha / 2})
 	}
 	drawTank(screen, g.player, color.RGBA{52, 212, 148, 255}, color.RGBA{180, 255, 218, 255})
-	for _, e := range g.enemies {
+	for i := range g.enemies {
+		e := g.enemies[i]
 		body := color.RGBA{228, 88, 58, 255}
 		accent := color.RGBA{255, 196, 136, 255}
 		if e.role == roleLeftFlank || e.role == roleRightFlank {
 			body = color.RGBA{214, 126, 68, 255}
 			accent = color.RGBA{255, 224, 162, 255}
 		}
-		drawTank(screen, *e, body, accent)
+		drawTank(screen, e, body, accent)
 	}
 
-	for _, b := range g.bullets {
-		drawBullet(screen, b)
+	for i := range g.bullets {
+		drawBullet(screen, &g.bullets[i])
 	}
 
-	for _, p := range g.powerups {
-		drawPowerup(screen, p)
+	for i := range g.powerups {
+		drawPowerup(screen, &g.powerups[i])
 	}
-	for _, ex := range g.explosions {
-		drawExplosion(screen, ex, g.audioFrame)
+	for i := range g.explosions {
+		drawExplosion(screen, &g.explosions[i], g.audioFrame)
 	}
 
 	drawHUD(screen, g)
@@ -247,7 +248,9 @@ func difficultyPresentation(d difficulty) (string, string, float64) {
 }
 
 func Draw(screen *ebiten.Image, snapshot Snapshot) {
-	newCompatGame(snapshot).Draw(screen)
+	g := newCompatGame(snapshot)
+	defer releaseCompatGame(g)
+	g.Draw(screen)
 }
 
 func Layout(_, _ int) (int, int) { return screenW, screenH }

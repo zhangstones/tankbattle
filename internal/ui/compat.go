@@ -3,6 +3,7 @@ package ui
 import (
 	"image/color"
 	"strings"
+	"sync"
 )
 
 const (
@@ -125,12 +126,12 @@ type game struct {
 	state gameState
 
 	player     tank
-	enemies    []*tank
-	bullets    []*bullet
-	walls      []*wall
+	enemies    []tank
+	bullets    []bullet
+	walls      []wall
 	fort       fortress
-	explosions []*explosion
-	powerups   []*powerup
+	explosions []explosion
+	powerups   []powerup
 
 	score               int
 	win                 bool
@@ -160,72 +161,83 @@ type game struct {
 }
 
 func newCompatGame(snapshot Snapshot) *game {
-	g := &game{
-		state:               snapshotState(snapshot.State),
-		player:              snapshotTank(snapshot.Player),
-		fort:                snapshotFortress(snapshot.Fort),
-		score:               snapshot.Score,
-		win:                 snapshot.Win,
-		paused:              snapshot.Paused,
-		audioFrame:          snapshot.AudioFrame,
-		wave:                snapshot.Wave,
-		maxWave:             snapshot.MaxWave,
-		msg:                 snapshot.Message,
-		shieldTick:          snapshot.ShieldTick,
-		rapidTick:           snapshot.RapidTick,
-		difficulty:          snapshotDifficulty(snapshot.Difficulty),
-		totalWaves:          snapshot.TotalWaves,
-		menuIndex:           snapshot.MenuIndex,
-		soundEnabled:        snapshot.SoundEnabled,
-		soundVolume:         snapshot.SoundVolume,
-		rankScroll:          snapshot.RankScroll,
-		showHistory:         snapshot.ShowHistory,
-		menuResumeAvailable: snapshot.MenuResumeAvailable,
-		menuRequireRestart:  snapshot.MenuRequireRestart,
-		bestScoreValue:      snapshot.BestScore,
-		currentRankValue:    snapshot.CurrentRank,
-		backgroundSeed:      snapshot.BackgroundSeed,
-		matchIntroTick:      snapshot.MatchIntroTick,
-		matchIntroMax:       snapshot.MatchIntroMax,
-	}
+	g := compatGamePool.Get().(*game)
+	fillCompatGame(g, snapshot)
+	return g
+}
 
-	g.enemies = make([]*tank, 0, len(snapshot.Enemies))
+func releaseCompatGame(g *game) {
+	if g == nil {
+		return
+	}
+	compatGamePool.Put(g)
+}
+
+var compatGamePool = sync.Pool{
+	New: func() any {
+		return &game{}
+	},
+}
+
+func fillCompatGame(g *game, snapshot Snapshot) {
+	g.state = snapshotState(snapshot.State)
+	g.player = snapshotTank(snapshot.Player)
+	g.fort = snapshotFortress(snapshot.Fort)
+	g.score = snapshot.Score
+	g.win = snapshot.Win
+	g.paused = snapshot.Paused
+	g.audioFrame = snapshot.AudioFrame
+	g.wave = snapshot.Wave
+	g.maxWave = snapshot.MaxWave
+	g.msg = snapshot.Message
+	g.shieldTick = snapshot.ShieldTick
+	g.rapidTick = snapshot.RapidTick
+	g.difficulty = snapshotDifficulty(snapshot.Difficulty)
+	g.totalWaves = snapshot.TotalWaves
+	g.menuIndex = snapshot.MenuIndex
+	g.soundEnabled = snapshot.SoundEnabled
+	g.soundVolume = snapshot.SoundVolume
+	g.rankScroll = snapshot.RankScroll
+	g.showHistory = snapshot.ShowHistory
+	g.menuResumeAvailable = snapshot.MenuResumeAvailable
+	g.menuRequireRestart = snapshot.MenuRequireRestart
+	g.bestScoreValue = snapshot.BestScore
+	g.currentRankValue = snapshot.CurrentRank
+	g.backgroundSeed = snapshot.BackgroundSeed
+	g.matchIntroTick = snapshot.MatchIntroTick
+	g.matchIntroMax = snapshot.MatchIntroMax
+
+	g.enemies = g.enemies[:0]
 	for _, enemy := range snapshot.Enemies {
-		e := snapshotTank(enemy)
-		g.enemies = append(g.enemies, &e)
+		g.enemies = append(g.enemies, snapshotTank(enemy))
 	}
 
-	g.bullets = make([]*bullet, 0, len(snapshot.Bullets))
+	g.bullets = g.bullets[:0]
 	for _, shot := range snapshot.Bullets {
-		b := snapshotBullet(shot)
-		g.bullets = append(g.bullets, &b)
+		g.bullets = append(g.bullets, snapshotBullet(shot))
 	}
 
-	g.walls = make([]*wall, 0, len(snapshot.Walls))
+	g.walls = g.walls[:0]
 	for _, item := range snapshot.Walls {
-		w := snapshotWall(item)
-		g.walls = append(g.walls, &w)
+		g.walls = append(g.walls, snapshotWall(item))
 	}
 
-	g.explosions = make([]*explosion, 0, len(snapshot.Explosions))
+	g.explosions = g.explosions[:0]
 	for _, item := range snapshot.Explosions {
-		ex := snapshotExplosion(item)
-		g.explosions = append(g.explosions, &ex)
+		g.explosions = append(g.explosions, snapshotExplosion(item))
 	}
 
-	g.powerups = make([]*powerup, 0, len(snapshot.Powerups))
+	g.powerups = g.powerups[:0]
 	for _, item := range snapshot.Powerups {
-		p := snapshotPowerup(item)
-		g.powerups = append(g.powerups, &p)
+		g.powerups = append(g.powerups, snapshotPowerup(item))
 	}
 
-	g.scoreHistory = make([]scoreEntry, 0, len(snapshot.ScoreHistory))
+	g.scoreHistory = g.scoreHistory[:0]
 	for _, entry := range snapshot.ScoreHistory {
 		g.scoreHistory = append(g.scoreHistory, scoreEntry(entry))
 	}
 
 	g.clampRankScroll()
-	return g
 }
 
 func snapshotState(value string) gameState {

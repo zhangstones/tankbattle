@@ -1,5 +1,7 @@
 package game
 
+import gameui "tankbattle/internal/ui"
+
 const (
 	gridSize = 30
 
@@ -218,4 +220,5 @@ type game struct {
 	persistUserData bool
 	debug           *DebugController
 	debugFreeze     bool
+	uiSnapshotCache gameui.Snapshot
 }

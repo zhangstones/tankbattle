@@ -19,36 +19,35 @@ func (g *game) uiSnapshot() gameui.Snapshot {
 		return gameui.Snapshot{}
 	}
 
-	snapshot := gameui.Snapshot{
-		State:               debugStateName(g.state),
-		Player:              uiTank(g.player),
-		Fort:                uiFortress(g.fort),
-		Score:               g.score,
-		Win:                 g.win,
-		Paused:              g.paused,
-		AudioFrame:          g.audioFrame,
-		Wave:                g.wave,
-		MaxWave:             g.maxWave,
-		Message:             g.msg,
-		ShieldTick:          g.shieldTick,
-		RapidTick:           g.rapidTick,
-		Difficulty:          debugDifficultyName(g.difficulty),
-		TotalWaves:          g.totalWaves,
-		MenuIndex:           g.menuIndex,
-		SoundEnabled:        g.soundEnabled,
-		SoundVolume:         g.soundVolume,
-		RankScroll:          g.rankScroll,
-		ShowHistory:         g.showHistory,
-		MenuResumeAvailable: g.menuResumeAvailable,
-		MenuRequireRestart:  g.menuRequireRestart,
-		BestScore:           g.bestScore(),
-		CurrentRank:         g.currentRank(),
-		BackgroundSeed:      g.backgroundSeed,
-		MatchIntroTick:      g.matchIntroTick,
-		MatchIntroMax:       g.matchIntroMax,
-	}
+	snapshot := &g.uiSnapshotCache
+	snapshot.State = debugStateName(g.state)
+	snapshot.Player = uiTank(g.player)
+	snapshot.Fort = uiFortress(g.fort)
+	snapshot.Score = g.score
+	snapshot.Win = g.win
+	snapshot.Paused = g.paused
+	snapshot.AudioFrame = g.audioFrame
+	snapshot.Wave = g.wave
+	snapshot.MaxWave = g.maxWave
+	snapshot.Message = g.msg
+	snapshot.ShieldTick = g.shieldTick
+	snapshot.RapidTick = g.rapidTick
+	snapshot.Difficulty = debugDifficultyName(g.difficulty)
+	snapshot.TotalWaves = g.totalWaves
+	snapshot.MenuIndex = g.menuIndex
+	snapshot.SoundEnabled = g.soundEnabled
+	snapshot.SoundVolume = g.soundVolume
+	snapshot.RankScroll = g.rankScroll
+	snapshot.ShowHistory = g.showHistory
+	snapshot.MenuResumeAvailable = g.menuResumeAvailable
+	snapshot.MenuRequireRestart = g.menuRequireRestart
+	snapshot.BestScore = g.bestScore()
+	snapshot.CurrentRank = g.currentRank()
+	snapshot.BackgroundSeed = g.backgroundSeed
+	snapshot.MatchIntroTick = g.matchIntroTick
+	snapshot.MatchIntroMax = g.matchIntroMax
 
-	snapshot.Enemies = make([]gameui.Tank, 0, len(g.enemies))
+	snapshot.Enemies = snapshot.Enemies[:0]
 	for _, enemy := range g.enemies {
 		if enemy == nil {
 			continue
@@ -56,7 +55,7 @@ func (g *game) uiSnapshot() gameui.Snapshot {
 		snapshot.Enemies = append(snapshot.Enemies, uiTank(*enemy))
 	}
 
-	snapshot.Bullets = make([]gameui.Bullet, 0, len(g.bullets))
+	snapshot.Bullets = snapshot.Bullets[:0]
 	for _, shot := range g.bullets {
 		if shot == nil {
 			continue
@@ -64,7 +63,7 @@ func (g *game) uiSnapshot() gameui.Snapshot {
 		snapshot.Bullets = append(snapshot.Bullets, uiBullet(*shot))
 	}
 
-	snapshot.Walls = make([]gameui.Wall, 0, len(g.walls))
+	snapshot.Walls = snapshot.Walls[:0]
 	for _, item := range g.walls {
 		if item == nil {
 			continue
@@ -72,7 +71,7 @@ func (g *game) uiSnapshot() gameui.Snapshot {
 		snapshot.Walls = append(snapshot.Walls, uiWall(*item))
 	}
 
-	snapshot.Explosions = make([]gameui.Explosion, 0, len(g.explosions))
+	snapshot.Explosions = snapshot.Explosions[:0]
 	for _, item := range g.explosions {
 		if item == nil {
 			continue
@@ -80,7 +79,7 @@ func (g *game) uiSnapshot() gameui.Snapshot {
 		snapshot.Explosions = append(snapshot.Explosions, uiExplosion(*item))
 	}
 
-	snapshot.Powerups = make([]gameui.Powerup, 0, len(g.powerups))
+	snapshot.Powerups = snapshot.Powerups[:0]
 	for _, item := range g.powerups {
 		if item == nil {
 			continue
@@ -88,12 +87,12 @@ func (g *game) uiSnapshot() gameui.Snapshot {
 		snapshot.Powerups = append(snapshot.Powerups, uiPowerup(*item))
 	}
 
-	snapshot.ScoreHistory = make([]gameui.ScoreEntry, 0, len(g.scoreHistory))
+	snapshot.ScoreHistory = snapshot.ScoreHistory[:0]
 	for _, entry := range g.scoreHistory {
 		snapshot.ScoreHistory = append(snapshot.ScoreHistory, gameui.ScoreEntry(entry))
 	}
 
-	return snapshot
+	return *snapshot
 }
 
 func uiRect(value rect) gameui.Rect {

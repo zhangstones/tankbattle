@@ -145,15 +145,12 @@ func drawMenu(screen *ebiten.Image, g *game) {
 	drawSurfacePanel(screen, menuPanelX, menuPanelY, menuPanelW, menuPanelH, uiSteelBlue)
 	drawSurfacePanel(screen, menuHeaderX, menuHeaderY, menuHeaderW, menuHeaderH, uiSignalGreen)
 	drawSurfacePanel(screen, menuSidebarX, 60, menuSidebarW, 476, uiSignalAmber)
-	drawInsetPanel(screen, 92, 522, 520, 70, uiSteelBlue, false, g.audioFrame)
+	drawInsetPanel(screen, 92, 528, 520, 36, uiSteelBlue, false, g.audioFrame)
 
 	ebitenutil.DebugPrintAt(screen, menuTitleText, menuTitleX(), menuTitleY())
-	ebitenutil.DebugPrintAt(screen, "FORTRESS FRONTLINE", 112, 84)
 	ebitenutil.DebugPrintAt(screen, "Tune the mission before deployment. Gameplay rules stay unchanged.", 112, 106)
 
 	diffLabel, diffDesc, diffRate := difficultyPresentation(g.difficulty)
-	drawPillLabel(screen, 434, 78, 150, 24, uiSignalGreen, "DIFFICULTY "+diffLabel)
-	drawMeter(screen, 434, 106, 150, 10, diffRate, uiSignalGreen)
 
 	for i, line := range []string{menuHelpLine1, menuHelpLine2, menuHelpLine3} {
 		y := layout.helpLineY[i]
@@ -253,8 +250,7 @@ func drawMenu(screen *ebiten.Image, g *game) {
 		ebitenutil.DebugPrintAt(screen, "Adjust, then launch.", menuSidebarX+34, 364)
 	}
 
-	ebitenutil.DebugPrintAt(screen, "Tip: R restarts instantly during battle, H opens score history.", 110, 544)
-	ebitenutil.DebugPrintAt(screen, "Selected options pulse and expose their current operational value.", 110, 562)
+	ebitenutil.DebugPrintAt(screen, "Tip: R restarts in battle, H opens score history.", 110, 540)
 
 	drawSurfacePanel(screen, 92, menuFooterY, 780, 28, uiSteelBlue)
 	ebitenutil.DebugPrintAt(screen, "Enter start  Left/Right adjust  Up/Down browse  M back", 214, menuFooterY+8)

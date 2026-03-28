@@ -23,7 +23,9 @@
 - `cmd/sfxgen`
   - 音效资源生成工具，不参与主游戏状态机。
 - `internal/tankbattle`
-  - 运行时编排层和核心聚合根。
+  - 对外稳定入口，只负责转调运行时包。
+- `internal/game`
+  - 游戏核心运行时、聚合根和主循环实现。
 - `internal/audio`
   - 音频资源与音效播放实现。
 - `internal/storage`
@@ -61,7 +63,7 @@
 
 ## 4. 核心聚合根
 
-`internal/tankbattle` 里仍然保留单一聚合根 `game`。它统一持有：
+`internal/game` 里保留单一聚合根 `game`。它统一持有：
 
 - 顶层状态：`state`、`paused`、`win`
 - 实体集合：玩家、敌人、子弹、墙体、堡垒、爆炸、道具
@@ -81,7 +83,7 @@
 
 ## 5. 业务逻辑拆分
 
-`internal/tankbattle` 内部仍按职责拆文件，但不急于拆成大量小包：
+`internal/game` 内部仍按职责拆文件，但不急于拆成大量小包：
 
 - `setup.go`
   - 对局初始化、地图与障碍布局、敌军生成。
@@ -104,7 +106,7 @@
 
 ## 6. UI 边界
 
-这一轮迁移后，渲染层已经从 `internal/tankbattle` 抽到 `internal/ui`。
+这一轮迁移后，渲染层已经从核心运行时抽到 `internal/ui`。
 
 当前边界是：
 
@@ -114,7 +116,7 @@
   - 使用这些原语完成菜单、HUD、历史面板、消息框、暂停框、胜负框以及战场对象的最终绘制。
 - `internal/ui/types.go`
   - 定义稳定的 UI 侧数据结构 `ui.Snapshot` 以及相关枚举和常量。
-- `internal/tankbattle/ui_bridge.go`
+- `internal/game/ui_bridge.go`
   - 负责把运行时内部状态映射成 `ui.Snapshot`，并调用 `ui.Draw` / `ui.Layout`。
 
 这里最关键的设计取舍是：`internal/ui` 不直接依赖 `game` 聚合根，而只消费一个稳定快照。
@@ -123,7 +125,7 @@
 
 - 渲染可以独立演进，不必暴露大量运行时内部字段。
 - 快照测试和布局测试可以围绕 `ui` 包单独收口。
-- 后续继续拆 `internal/game` 时，UI 不需要再跟着一起大改。
+- 后续继续细分玩法模块时，UI 不需要再跟着一起大改。
 
 ## 7. 菜单与状态流转
 
@@ -174,7 +176,7 @@
 - `internal/debugapi`
   - 负责本地 HTTP 控制器和请求队列。
 
-`internal/tankbattle` 只保留桥接逻辑：
+`internal/game` 只保留与基础设施和渲染的桥接逻辑：
 
 - 音频通过 `audio_bridge.go` 接入聚合根。
 - 存储通过 `settings.go` / `score_history.go` 回接。
@@ -207,13 +209,14 @@
 
 目前已经完成的重构阶段：
 
-1. 根目录运行时代码和文档收口到 `internal/tankbattle` 与 `docs`。
+1. 根目录运行时代码和文档先收口到 `internal/tankbattle` 与 `docs`。
 2. 独立基础模块拆出：`internal/audio`、`internal/storage`、`internal/debugapi`。
 3. UI 渲染层拆出到 `internal/ui`，通过 `ui.Snapshot` 与运行时解耦。
+4. 游戏核心运行时整体收口到 `internal/game`，`internal/tankbattle` 退化为薄入口包装。
 
 尚未完成的下一阶段是：
 
-- 继续把核心玩法逻辑从 `internal/tankbattle` 收敛成更清晰的子模块边界。
+- 在 `internal/game` 内继续按稳定边界细分玩法模块。
 
 但当前不会为了“看起来更整洁”而立即把玩法逻辑拆成大量细包。后续继续拆分的前提是：边界稳定、依赖清晰、回归成本可控。
 

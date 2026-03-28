@@ -1,4 +1,4 @@
-package tankbattle
+package game
 
 import "math/rand"
 

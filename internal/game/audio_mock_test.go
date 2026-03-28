@@ -1,4 +1,4 @@
-package tankbattle
+package game
 
 type mockSFXPlayer struct {
 	enabled bool

@@ -1,4 +1,4 @@
-package tankbattle
+package game
 
 func newPlayingGameForTest() *game {
 	g := newGame()

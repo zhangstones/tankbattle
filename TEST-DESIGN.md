@@ -386,3 +386,69 @@
 - 不扩写 `DESIGN.md` 的测试细节，避免与整体架构文档重复
 
 后续若测试框架正式落地并形成稳定命令，再将“如何运行测试”补充到 `README.md`。
+## 16. 2026-03-28 落地总结
+
+当前测试方案已经完成首轮落地，仓库中的测试目录统一为：
+
+```text
+/testing
+  /testkit
+  /functional
+  /ui
+  /testdata/golden
+
+/.tmp/testing
+```
+
+目录职责：
+
+- `testing/testkit`
+  - 放调试 API client、E2E 启动器、快照 diff 和 golden 更新辅助逻辑
+- `testing/functional`
+  - 放通过调试 API 驱动真实游戏进程的功能测试
+- `testing/ui`
+  - 放命名场景快照和 golden 回归测试
+- `testing/testdata/golden`
+  - 放需要提交的快照基线
+- `.tmp/testing`
+  - 放运行期临时产物、失败 diff 图和临时快照，不提交
+
+### 16.1 命令分层
+
+当前建议固定区分三层命令：
+
+1. 默认回归
+   - `go test ./...`
+   - 覆盖单元测试、布局约束测试和调试 API 基础测试
+2. 真实 GUI 功能与界面回归
+   - `$env:TANKBATTLE_E2E='1'; $env:TANKBATTLE_E2E_BINARY='tankbattle_gui.exe'; go test ./testing/functional ./testing/ui`
+3. golden 更新
+   - `$env:TANKBATTLE_E2E='1'; $env:TANKBATTLE_E2E_BINARY='tankbattle_gui.exe'; $env:TANKBATTLE_UPDATE_GOLDEN='1'; go test ./testing/ui`
+
+这样分层的原因是：
+
+- `go test ./...` 需要保持在无 GUI 会话时也能运行
+- 真实 GUI 快照回归必须显式启用 `TANKBATTLE_E2E=1`
+- golden 更新必须和普通回归分离，避免误把回归问题直接覆盖成新基线
+
+### 16.2 场景稳定性策略
+
+当前 UI 快照依赖命名场景 `scene.*`。实践结论是，命名场景必须进入“调试冻结态”：
+
+- 切到 `scene.*` 后，不继续推进 `frame` / `audioFrame`
+- 防止背景动画、pulse 效果、buff 倒计时等随帧变化的元素污染快照
+- 一旦执行非 `scene.*` 的真实动作，冻结态取消，不影响功能测试
+
+这条策略已经被证明是 UI 快照稳定回归的前提。
+
+### 16.3 当前回归经验
+
+这次落地后得到两个明确经验：
+
+- 仅跑 `go test ./...` 不等于完成真实界面回归
+- 真实 GUI 套件要单独作为验收入口执行，否则菜单 / HUD 视觉变化可能不会被及时发现
+
+当前已知的菜单快照基线问题已经单独记录在 `ISSUE.md`，后续处理时应先判断：
+
+- 是预期设计变化，需要审核后更新 golden
+- 还是非预期回归，需要先修复渲染再回归

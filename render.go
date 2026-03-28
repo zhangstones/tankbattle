@@ -130,11 +130,17 @@ func drawMenu(screen *ebiten.Image, g *game) {
 	layout := computeMenuLayout(menuItemCount)
 
 	const (
-		menuOptionsX = 92
-		menuOptionsW = 520
-		menuSidebarX = 640
-		menuSidebarW = 232
+		menuOptionsX      = 92
+		menuOptionsW      = 520
+		menuSidebarX      = 640
+		menuSidebarW      = 232
+		menuValuePillW    = 128
+		menuValuePillH    = 22
+		menuValueMeterW   = 128
+		menuValueColumnGap = 16
 	)
+	menuValuePillX := float64(menuOptionsX + menuOptionsW - menuValuePillW - menuValueColumnGap)
+	menuValueMeterX := float64(menuOptionsX + menuOptionsW - menuValueMeterW - menuValueColumnGap)
 
 	drawSurfacePanel(screen, menuPanelX, menuPanelY, menuPanelW, menuPanelH, uiSteelBlue)
 	drawSurfacePanel(screen, menuHeaderX, menuHeaderY, menuHeaderW, menuHeaderH, uiSignalGreen)
@@ -146,8 +152,7 @@ func drawMenu(screen *ebiten.Image, g *game) {
 	ebitenutil.DebugPrintAt(screen, "Tune the mission before deployment. Gameplay rules stay unchanged.", 112, 106)
 
 	diffLabel, diffDesc, diffRate := difficultyPresentation(g.difficulty)
-	drawPill(screen, 434, 78, 150, 24, uiSignalGreen)
-	ebitenutil.DebugPrintAt(screen, "DIFFICULTY "+diffLabel, 448, 86)
+	drawPillLabel(screen, 434, 78, 150, 24, uiSignalGreen, "DIFFICULTY "+diffLabel)
 	drawMeter(screen, 434, 106, 150, 10, diffRate, uiSignalGreen)
 
 	for i, line := range []string{menuHelpLine1, menuHelpLine2, menuHelpLine3} {
@@ -189,18 +194,13 @@ func drawMenu(screen *ebiten.Image, g *game) {
 		ebitenutil.DebugPrintAt(screen, optionTitles[i], 116, layout.optionTextY[i])
 		ebitenutil.DebugPrintAt(screen, optionDescs[i], 116, layout.optionTextY[i]+18)
 
-		valueX := menuOptionsX + menuOptionsW - float64(textWidth(optionValues[i])+44)
-		if valueX < 420 {
-			valueX = 420
-		}
-		drawPill(screen, valueX, top+10, 110, 22, accent)
-		ebitenutil.DebugPrintAt(screen, optionValues[i], int(valueX)+16, int(top)+16)
+		drawPillLabel(screen, menuValuePillX, top+10, menuValuePillW, menuValuePillH, accent, optionValues[i])
 
 		switch i {
 		case 0:
-			drawMeter(screen, 446, top+38, 150, 8, diffRate, uiSignalGreen)
+			drawMeter(screen, menuValueMeterX, top+38, menuValueMeterW, 8, diffRate, uiSignalGreen)
 		case 1:
-			drawMeter(screen, 446, top+38, 150, 8, float64(g.totalWaves-matchWaveMin)/float64(matchWaveMax-matchWaveMin), uiSteelBlue)
+			drawMeter(screen, menuValueMeterX, top+38, menuValueMeterW, 8, float64(g.totalWaves-matchWaveMin)/float64(matchWaveMax-matchWaveMin), uiSteelBlue)
 		case 2:
 			stateRate := 0.0
 			fill := uiSignalRed
@@ -208,11 +208,11 @@ func drawMenu(screen *ebiten.Image, g *game) {
 				stateRate = 1
 				fill = uiSignalGreen
 			}
-			drawMeter(screen, 446, top+38, 150, 8, stateRate, fill)
+			drawMeter(screen, menuValueMeterX, top+38, menuValueMeterW, 8, stateRate, fill)
 		case 3:
-			drawMeter(screen, 446, top+38, 150, 8, float64(g.soundVolume)/100, uiSignalAmber)
+			drawMeter(screen, menuValueMeterX, top+38, menuValueMeterW, 8, float64(g.soundVolume)/100, uiSignalAmber)
 		case 4:
-			drawMeter(screen, 446, top+38, 150, 8, 1, uiSignalGreen)
+			drawMeter(screen, menuValueMeterX, top+38, menuValueMeterW, 8, 1, uiSignalGreen)
 		}
 	}
 
@@ -276,8 +276,7 @@ func drawHUDCompetitive(screen *ebiten.Image, g *game) {
 
 	ebitenutil.DebugPrintAt(screen, "MISSION CONTROL", int(leftX)+18, int(leftY)+16)
 	diffLabel, _, diffRate := difficultyPresentation(g.difficulty)
-	drawPill(screen, leftX+376, leftY+12, 138, 22, uiSteelBlue)
-	ebitenutil.DebugPrintAt(screen, "MODE "+diffLabel, int(leftX)+394, int(leftY)+18)
+	drawPillLabel(screen, leftX+376, leftY+12, 138, 22, uiSteelBlue, "MODE "+diffLabel)
 
 	waveRate := 1.0
 	if g.maxWave > 0 {
@@ -314,8 +313,7 @@ func drawHUDCompetitive(screen *ebiten.Image, g *game) {
 		statusText = fmt.Sprintf("RAPID %ds", g.rapidTick/60)
 		statusAccent = uiSignalAmber
 	}
-	drawPill(screen, leftX+376, leftY+34, 138, 18, statusAccent)
-	ebitenutil.DebugPrintAt(screen, statusText, int(leftX)+392, int(leftY)+39)
+	drawPillLabel(screen, leftX+376, leftY+34, 138, 18, statusAccent, statusText)
 
 	drawHUDVitals(screen, g, rightX, rightY, rightW, diffRate)
 }
@@ -340,9 +338,9 @@ func drawHUDVitals(screen *ebiten.Image, g *game, x, y, w, diffRate float64) {
 	ebitenutil.DebugPrintAt(screen, fmt.Sprintf("%d/%d", tankNow, tankMax), int(x)+238, int(y)+75)
 
 	drawInsetPanel(screen, x+w-118, y+14, 96, 30, uiSignalAmber, false, g.audioFrame)
-	ebitenutil.DebugPrintAt(screen, "THREAT", int(x+w)-100, int(y)+21)
+	ebitenutil.DebugPrintAt(screen, "THREAT", centeredTextX("THREAT", int(x+w-118), 96), centeredTextY(int(y+14), 30, menuTextHeight))
 	drawMeter(screen, x+w-118, y+48, 96, 10, diffRate, uiSignalAmber)
-	ebitenutil.DebugPrintAt(screen, "H history", int(x+w)-104, int(y)+66)
+	ebitenutil.DebugPrintAt(screen, "H history", centeredTextX("H history", int(x+w-118), 96), int(y)+66)
 }
 
 func drawBoldText(screen *ebiten.Image, s string, x, y int) {
@@ -807,4 +805,9 @@ func drawStatusPanel(screen *ebiten.Image, panelW, panelH int, accent color.RGBA
 		lineY := startY + i*(menuTextHeight+lineGap)
 		ebitenutil.DebugPrintAt(screen, line, centeredTextX(line, int(x), panelW), lineY)
 	}
+}
+
+func drawPillLabel(screen *ebiten.Image, x, y, w, h float64, accent color.RGBA, text string) {
+	drawPill(screen, x, y, w, h, accent)
+	ebitenutil.DebugPrintAt(screen, text, centeredTextX(text, int(x), int(w)), centeredTextY(int(y), int(h), menuTextHeight))
 }

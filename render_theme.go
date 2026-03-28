@@ -68,24 +68,24 @@ func drawRectOutline(screen *ebiten.Image, x, y, w, h, thick float64, c color.Co
 }
 
 func drawBracketCorners(screen *ebiten.Image, x, y, w, h, size float64, c color.Color) {
-	ebitenutil.DrawRect(screen, x, y, size, 2, c)
-	ebitenutil.DrawRect(screen, x, y, 2, size, c)
-	ebitenutil.DrawRect(screen, x+w-size, y, size, 2, c)
-	ebitenutil.DrawRect(screen, x+w-2, y, 2, size, c)
-	ebitenutil.DrawRect(screen, x, y+h-2, size, 2, c)
-	ebitenutil.DrawRect(screen, x, y+h-size, 2, size, c)
-	ebitenutil.DrawRect(screen, x+w-size, y+h-2, size, 2, c)
-	ebitenutil.DrawRect(screen, x+w-2, y+h-size, 2, size, c)
+	ebitenutil.DrawRect(screen, x, y, size, 1, c)
+	ebitenutil.DrawRect(screen, x, y, 1, size, c)
+	ebitenutil.DrawRect(screen, x+w-size, y, size, 1, c)
+	ebitenutil.DrawRect(screen, x+w-1, y, 1, size, c)
+	ebitenutil.DrawRect(screen, x, y+h-1, size, 1, c)
+	ebitenutil.DrawRect(screen, x, y+h-size, 1, size, c)
+	ebitenutil.DrawRect(screen, x+w-size, y+h-1, size, 1, c)
+	ebitenutil.DrawRect(screen, x+w-1, y+h-size, 1, size, c)
 }
 
 func drawSurfacePanel(screen *ebiten.Image, x, y, w, h float64, accent color.RGBA) {
-	drawGlow(screen, x-4, y-4, w+8, h+8, 3, alpha(accent, 18))
+	drawGlow(screen, x-2, y-2, w+4, h+4, 2, alpha(accent, 12))
 	ebitenutil.DrawRect(screen, x, y, w, h, uiInk)
-	ebitenutil.DrawRect(screen, x+3, y+3, w-6, h-6, uiPanelFill)
-	ebitenutil.DrawRect(screen, x+3, y+3, w-6, 18, alpha(uiPanelSoft, 210))
+	ebitenutil.DrawRect(screen, x+2, y+2, w-4, h-4, uiPanelFill)
+	ebitenutil.DrawRect(screen, x+2, y+2, w-4, 14, alpha(uiPanelSoft, 210))
 	drawRectOutline(screen, x+1, y+1, w-2, h-2, 1, alpha(uiPanelLine, 160))
-	ebitenutil.DrawRect(screen, x+12, y+10, w-24, 2, alpha(accent, 170))
-	drawBracketCorners(screen, x+1, y+1, w-2, h-2, 14, alpha(accent, 210))
+	ebitenutil.DrawRect(screen, x+12, y+8, w-24, 1, alpha(accent, 170))
+	drawBracketCorners(screen, x+1, y+1, w-2, h-2, 10, alpha(accent, 210))
 }
 
 func drawInsetPanel(screen *ebiten.Image, x, y, w, h float64, accent color.RGBA, selected bool, frame int) {
@@ -94,20 +94,20 @@ func drawInsetPanel(screen *ebiten.Image, x, y, w, h float64, accent color.RGBA,
 	if selected {
 		fill = alpha(blend(uiPanelSoft, accent, 0.16), 228)
 		line = alpha(accent, uint8(pulse(frame, 0.12, 160, 235)))
-		drawGlow(screen, x-2, y-2, w+4, h+4, 2, alpha(accent, 24))
+		drawGlow(screen, x-1, y-1, w+2, h+2, 1, alpha(accent, 18))
 	}
 	ebitenutil.DrawRect(screen, x, y, w, h, fill)
 	drawRectOutline(screen, x, y, w, h, 1, line)
-	ebitenutil.DrawRect(screen, x+1, y+1, w-2, 2, alpha(accent, 75))
+	ebitenutil.DrawRect(screen, x+1, y+1, w-2, 1, alpha(accent, 75))
 	if selected {
-		ebitenutil.DrawRect(screen, x+6, y+6, 6, h-12, line)
+		ebitenutil.DrawRect(screen, x+5, y+5, 4, h-10, line)
 	}
 }
 
 func drawPill(screen *ebiten.Image, x, y, w, h float64, accent color.RGBA) {
 	ebitenutil.DrawRect(screen, x, y, w, h, alpha(uiInk, 228))
 	drawRectOutline(screen, x, y, w, h, 1, alpha(accent, 210))
-	ebitenutil.DrawRect(screen, x+1, y+1, w-2, 2, alpha(accent, 96))
+	ebitenutil.DrawRect(screen, x+1, y+1, w-2, 1, alpha(accent, 96))
 }
 
 func drawMeter(screen *ebiten.Image, x, y, w, h, rate float64, fill color.RGBA) {

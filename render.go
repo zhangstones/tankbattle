@@ -217,32 +217,40 @@ func drawMenu(screen *ebiten.Image, g *game) {
 	}
 
 	drawInsetPanel(screen, menuSidebarX+16, 84, 200, 86, uiSignalGreen, false, g.audioFrame)
-	ebitenutil.DebugPrintAt(screen, "MISSION PROFILE", menuSidebarX+34, 100)
-	ebitenutil.DebugPrintAt(screen, fmt.Sprintf("Waves: %d", g.totalWaves), menuSidebarX+34, 124)
-	ebitenutil.DebugPrintAt(screen, fmt.Sprintf("Audio: %s / %d%%", onOffText(g.soundEnabled), g.soundVolume), menuSidebarX+34, 142)
+	ebitenutil.DebugPrintAt(screen, "PROFILE", menuSidebarX+34, 100)
+	ebitenutil.DebugPrintAt(screen, "Mode: "+diffLabel, menuSidebarX+34, 124)
+	ebitenutil.DebugPrintAt(screen, fmt.Sprintf("Waves: %d", g.totalWaves), menuSidebarX+34, 142)
+	ebitenutil.DebugPrintAt(screen, fmt.Sprintf("Audio: %s %d%%", onOffText(g.soundEnabled), g.soundVolume), menuSidebarX+34, 160)
 
 	drawInsetPanel(screen, menuSidebarX+16, 182, 200, 112, uiSteelBlue, false, g.audioFrame)
-	ebitenutil.DebugPrintAt(screen, "QUICK COMMANDS", menuSidebarX+34, 198)
-	ebitenutil.DebugPrintAt(screen, "1 easy", menuSidebarX+34, 222)
-	ebitenutil.DebugPrintAt(screen, "2 normal", menuSidebarX+34, 240)
-	ebitenutil.DebugPrintAt(screen, "3 hard", menuSidebarX+34, 258)
-	ebitenutil.DebugPrintAt(screen, "M return", menuSidebarX+34, 276)
+	ebitenutil.DebugPrintAt(screen, "MISSION STATE", menuSidebarX+34, 198)
+	if g.menuResumeAvailable {
+		ebitenutil.DebugPrintAt(screen, "Opened from run.", menuSidebarX+34, 222)
+		if g.menuRequireRestart {
+			ebitenutil.DebugPrintAt(screen, "Setup change restarts.", menuSidebarX+34, 240)
+		} else {
+			ebitenutil.DebugPrintAt(screen, "Exit keeps run.", menuSidebarX+34, 240)
+		}
+		ebitenutil.DebugPrintAt(screen, "Enter starts new run.", menuSidebarX+34, 258)
+	} else {
+		ebitenutil.DebugPrintAt(screen, "Ready to deploy.", menuSidebarX+34, 222)
+		ebitenutil.DebugPrintAt(screen, "Difficulty, waves,", menuSidebarX+34, 240)
+		ebitenutil.DebugPrintAt(screen, "audio set here.", menuSidebarX+34, 258)
+	}
 
 	drawInsetPanel(screen, menuSidebarX+16, 306, 200, 154, uiSignalAmber, false, g.audioFrame)
-	ebitenutil.DebugPrintAt(screen, "READINESS", menuSidebarX+34, 322)
-	ebitenutil.DebugPrintAt(screen, "Move: WASD/arrows.", menuSidebarX+34, 346)
-	ebitenutil.DebugPrintAt(screen, "Rotate: double-tap.", menuSidebarX+34, 364)
-	ebitenutil.DebugPrintAt(screen, "Fire: J/Space.", menuSidebarX+34, 382)
+	ebitenutil.DebugPrintAt(screen, "DEPLOY", menuSidebarX+34, 322)
 	if g.menuResumeAvailable {
-		ebitenutil.DebugPrintAt(screen, "M returns to run.", menuSidebarX+34, 414)
+		ebitenutil.DebugPrintAt(screen, "Enter starts setup.", menuSidebarX+34, 346)
+		ebitenutil.DebugPrintAt(screen, "M closes menu.", menuSidebarX+34, 364)
 		if g.menuRequireRestart {
-			ebitenutil.DebugPrintAt(screen, "Changed setup restarts.", menuSidebarX+34, 432)
+			ebitenutil.DebugPrintAt(screen, "Close now: restart.", menuSidebarX+34, 396)
 		} else {
-			ebitenutil.DebugPrintAt(screen, "Audio-only keeps run.", menuSidebarX+34, 432)
+			ebitenutil.DebugPrintAt(screen, "Close now: resume.", menuSidebarX+34, 396)
 		}
 	} else {
-		ebitenutil.DebugPrintAt(screen, "Press Enter to deploy.", menuSidebarX+34, 414)
-		ebitenutil.DebugPrintAt(screen, "Cleaner UI, same play.", menuSidebarX+34, 432)
+		ebitenutil.DebugPrintAt(screen, "Enter starts mission.", menuSidebarX+34, 346)
+		ebitenutil.DebugPrintAt(screen, "Adjust, then launch.", menuSidebarX+34, 364)
 	}
 
 	ebitenutil.DebugPrintAt(screen, "Tip: R restarts instantly during battle, H opens score history.", 110, 544)

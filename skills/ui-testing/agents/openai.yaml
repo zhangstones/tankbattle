@@ -1,0 +1,3 @@
+interface:
+  display_name: "UI Testing"
+  short_description: "Build stable UI regression flows with debug scenes, snapshots, and golden baselines"

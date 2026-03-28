@@ -211,6 +211,10 @@ type game struct {
 	playerTapFrame      [4]int
 	playerPressStart    [4]int
 	playerMoveLockUntil int
+
+	persistUserData bool
+	debug           *DebugController
+	debugFreeze     bool
 }
 
 type sfxPlayer interface {

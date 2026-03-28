@@ -10,24 +10,52 @@ import (
 
 var randSeedOnce sync.Once
 
+type newGameOptions struct {
+	loadUserSettings bool
+	persistUserData  bool
+	audio            sfxPlayer
+	debug            *DebugController
+	randomSeed       *int64
+}
+
 func newGame() *game {
+	return newGameWithOptions(newGameOptions{
+		loadUserSettings: true,
+		persistUserData:  true,
+		audio:            newAudioManager(),
+	})
+}
+
+func newGameWithOptions(opts newGameOptions) *game {
+	seedGameplayRandom(opts.randomSeed)
+	g := &game{
+		state:           stateMenu,
+		difficulty:      diffNormal,
+		enemyBase:       3,
+		totalWaves:      4,
+		menuIndex:       0,
+		soundEnabled:    true,
+		soundVolume:     75,
+		persistUserData: opts.persistUserData,
+		audio:           opts.audio,
+		debug:           opts.debug,
+	}
+	if opts.loadUserSettings {
+		g.loadUserSettings()
+	}
+	return g
+}
+
+func seedGameplayRandom(seed *int64) {
+	if seed != nil {
+		rand.Seed(*seed)
+		return
+	}
 	randSeedOnce.Do(func() {
 		now := time.Now()
-		seed := now.UnixNano() ^ (int64(os.Getpid()) << 17) ^ now.UnixMicro()
-		rand.Seed(seed)
+		randomSeed := now.UnixNano() ^ (int64(os.Getpid()) << 17) ^ now.UnixMicro()
+		rand.Seed(randomSeed)
 	})
-	g := &game{
-		state:        stateMenu,
-		difficulty:   diffNormal,
-		enemyBase:    3,
-		totalWaves:   4,
-		menuIndex:    0,
-		soundEnabled: true,
-		soundVolume:  75,
-	}
-	g.audio = newAudioManager()
-	g.loadUserSettings()
-	return g
 }
 
 func (g *game) startMatch() {

@@ -122,6 +122,15 @@ func saveHistoryAt(path string, entries []scoreEntry) error {
 }
 
 func (g *game) loadUserSettings() {
+	if g == nil || !g.persistUserData {
+		g.scoreHistory = nil
+		g.rankScroll = 0
+		if g.audio != nil {
+			g.audio.SetEnabled(g.soundEnabled)
+			g.audio.SetSFXVolume(float64(g.soundVolume) / 100.0)
+		}
+		return
+	}
 	cfg, err := loadSettingsAt(settingsPath())
 	if err != nil {
 		legacy, legacyErr := loadSettingsAt(legacySettingsPath())
@@ -142,6 +151,11 @@ func (g *game) loadUserSettings() {
 }
 
 func (g *game) loadUserHistory() {
+	if g == nil || !g.persistUserData {
+		g.scoreHistory = nil
+		g.rankScroll = 0
+		return
+	}
 	entries, err := loadHistoryAt(historyPath())
 	if err == nil {
 		g.scoreHistory = entries
@@ -153,7 +167,7 @@ func (g *game) loadUserHistory() {
 }
 
 func (g *game) saveUserSettings() {
-	if g == nil {
+	if g == nil || !g.persistUserData {
 		return
 	}
 	_ = saveSettingsAt(settingsPath(), userSettings{
@@ -163,7 +177,7 @@ func (g *game) saveUserSettings() {
 }
 
 func (g *game) saveUserHistory() {
-	if g == nil {
+	if g == nil || !g.persistUserData {
 		return
 	}
 	_ = saveHistoryAt(historyPath(), g.scoreHistory)

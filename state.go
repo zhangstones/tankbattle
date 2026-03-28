@@ -8,7 +8,15 @@ import (
 )
 
 func (g *game) Update() error {
-	g.audioFrame++
+	if !(g.debug != nil && g.debugFreeze) {
+		g.audioFrame++
+	}
+	if err := g.processDebugRequests(); err != nil {
+		return err
+	}
+	if g.debug != nil && g.debugFreeze {
+		return nil
+	}
 
 	if inpututil.IsKeyJustPressed(ebiten.KeyH) {
 		g.toggleHistoryView()

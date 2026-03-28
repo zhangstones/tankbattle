@@ -1,288 +1,48 @@
 package tankbattle
 
 import (
-	"context"
-	"encoding/json"
 	"fmt"
 	"image"
 	"image/png"
-	"net"
-	"net/http"
 	"os"
 	"path/filepath"
 	"strings"
-	"sync"
-	"time"
 
 	"github.com/hajimehoshi/ebiten/v2"
 )
-
-type DebugState struct {
-	GameState           string `json:"game_state"`
-	MenuIndex           int    `json:"menu_index"`
-	Difficulty          string `json:"difficulty"`
-	TotalWaves          int    `json:"total_waves"`
-	SoundEnabled        bool   `json:"sound_enabled"`
-	SoundVolume         int    `json:"sound_volume"`
-	Paused              bool   `json:"paused"`
-	ShowHistory         bool   `json:"show_history"`
-	Wave                int    `json:"wave"`
-	MaxWave             int    `json:"max_wave"`
-	Score               int    `json:"score"`
-	EnemyCount          int    `json:"enemy_count"`
-	Win                 bool   `json:"win"`
-	MenuResumeAvailable bool   `json:"menu_resume_available"`
-	MenuRequireRestart  bool   `json:"menu_require_restart"`
-	Message             string `json:"message"`
-}
-
-type DebugController struct {
-	requests chan debugRequest
-
-	mu     sync.RWMutex
-	server *http.Server
-	addr   string
-}
-
-type debugRequestKind string
-
-const (
-	debugRequestActions  debugRequestKind = "actions"
-	debugRequestSnapshot debugRequestKind = "snapshot"
-	debugRequestState    debugRequestKind = "state"
-)
-
-type debugRequest struct {
-	kind    debugRequestKind
-	actions []string
-	dir     string
-	name    string
-	resp    chan debugResponse
-}
-
-type debugResponse struct {
-	path  string
-	state DebugState
-	err   error
-}
-
-type debugActionsPayload struct {
-	Actions []string `json:"actions"`
-}
-
-type debugSnapshotPayload struct {
-	Dir  string `json:"dir"`
-	Name string `json:"name"`
-}
-
-func NewDebugController() *DebugController {
-	return &DebugController{
-		requests: make(chan debugRequest, 16),
-	}
-}
-
-func (c *DebugController) ExecuteActions(actions ...string) error {
-	if len(actions) == 0 {
-		return nil
-	}
-	_, err := c.roundTrip(debugRequest{
-		kind:    debugRequestActions,
-		actions: append([]string(nil), actions...),
-	})
-	return err
-}
-
-func (c *DebugController) ExportSnapshot(dir, name string) (string, error) {
-	resp, err := c.roundTrip(debugRequest{
-		kind: debugRequestSnapshot,
-		dir:  dir,
-		name: name,
-	})
-	if err != nil {
-		return "", err
-	}
-	return resp.path, nil
-}
-
-func (c *DebugController) State() (DebugState, error) {
-	resp, err := c.roundTrip(debugRequest{kind: debugRequestState})
-	if err != nil {
-		return DebugState{}, err
-	}
-	return resp.state, nil
-}
-
-func (c *DebugController) StartHTTP(addr string) error {
-	if c == nil {
-		return fmt.Errorf("debug controller is nil")
-	}
-	addr = strings.TrimSpace(addr)
-	if addr == "" {
-		return fmt.Errorf("debug api addr is empty")
-	}
-
-	mux := http.NewServeMux()
-	mux.HandleFunc("/debug/state", c.handleState)
-	mux.HandleFunc("/debug/actions", c.handleActions)
-	mux.HandleFunc("/debug/snapshot", c.handleSnapshot)
-
-	server := &http.Server{
-		Addr:    addr,
-		Handler: mux,
-	}
-	ln, err := net.Listen("tcp", addr)
-	if err != nil {
-		return err
-	}
-
-	c.mu.Lock()
-	c.server = server
-	c.addr = ln.Addr().String()
-	c.mu.Unlock()
-
-	go func() {
-		_ = server.Serve(ln)
-	}()
-	return nil
-}
-
-func (c *DebugController) Close() error {
-	if c == nil {
-		return nil
-	}
-	c.mu.RLock()
-	server := c.server
-	c.mu.RUnlock()
-	if server == nil {
-		return nil
-	}
-	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
-	defer cancel()
-	return server.Shutdown(ctx)
-}
-
-func (c *DebugController) Addr() string {
-	if c == nil {
-		return ""
-	}
-	c.mu.RLock()
-	defer c.mu.RUnlock()
-	return c.addr
-}
-
-func (c *DebugController) roundTrip(req debugRequest) (debugResponse, error) {
-	if c == nil {
-		return debugResponse{}, fmt.Errorf("debug controller is nil")
-	}
-	req.resp = make(chan debugResponse, 1)
-	c.requests <- req
-	resp := <-req.resp
-	if resp.err != nil {
-		return debugResponse{}, resp.err
-	}
-	return resp, nil
-}
-
-func (c *DebugController) handleState(w http.ResponseWriter, r *http.Request) {
-	if r.Method != http.MethodGet {
-		writeDebugError(w, http.StatusMethodNotAllowed, "method not allowed")
-		return
-	}
-	state, err := c.State()
-	if err != nil {
-		writeDebugError(w, http.StatusInternalServerError, err.Error())
-		return
-	}
-	writeDebugJSON(w, http.StatusOK, state)
-}
-
-func (c *DebugController) handleActions(w http.ResponseWriter, r *http.Request) {
-	if r.Method != http.MethodPost {
-		writeDebugError(w, http.StatusMethodNotAllowed, "method not allowed")
-		return
-	}
-	var payload debugActionsPayload
-	if err := json.NewDecoder(r.Body).Decode(&payload); err != nil {
-		writeDebugError(w, http.StatusBadRequest, "invalid json body")
-		return
-	}
-	if len(payload.Actions) == 0 {
-		writeDebugError(w, http.StatusBadRequest, "actions are required")
-		return
-	}
-	if err := c.ExecuteActions(payload.Actions...); err != nil {
-		writeDebugError(w, http.StatusBadRequest, err.Error())
-		return
-	}
-	state, err := c.State()
-	if err != nil {
-		writeDebugError(w, http.StatusInternalServerError, err.Error())
-		return
-	}
-	writeDebugJSON(w, http.StatusOK, state)
-}
-
-func (c *DebugController) handleSnapshot(w http.ResponseWriter, r *http.Request) {
-	if r.Method != http.MethodPost {
-		writeDebugError(w, http.StatusMethodNotAllowed, "method not allowed")
-		return
-	}
-	var payload debugSnapshotPayload
-	if err := json.NewDecoder(r.Body).Decode(&payload); err != nil {
-		writeDebugError(w, http.StatusBadRequest, "invalid json body")
-		return
-	}
-	path, err := c.ExportSnapshot(payload.Dir, payload.Name)
-	if err != nil {
-		writeDebugError(w, http.StatusBadRequest, err.Error())
-		return
-	}
-	writeDebugJSON(w, http.StatusOK, map[string]string{"path": path})
-}
-
-func writeDebugJSON(w http.ResponseWriter, code int, v any) {
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(code)
-	_ = json.NewEncoder(w).Encode(v)
-}
-
-func writeDebugError(w http.ResponseWriter, code int, msg string) {
-	writeDebugJSON(w, code, map[string]string{"error": msg})
-}
 
 func (g *game) processDebugRequests() error {
 	if g == nil || g.debug == nil {
 		return nil
 	}
 	for {
-		select {
-		case req := <-g.debug.requests:
-			req.resp <- g.handleDebugRequest(req)
-		default:
+		req, ok := g.debug.Dequeue()
+		if !ok {
 			return nil
 		}
+		req.Reply(g.handleDebugRequest(req))
 	}
 }
 
 func (g *game) handleDebugRequest(req debugRequest) debugResponse {
-	switch req.kind {
+	switch req.Kind {
 	case debugRequestActions:
-		for _, action := range req.actions {
+		for _, action := range req.Actions {
 			if err := g.executeDebugAction(action); err != nil {
-				return debugResponse{err: err}
+				return debugResponse{Err: err}
 			}
 		}
 		return debugResponse{}
 	case debugRequestSnapshot:
-		path, err := g.exportSnapshot(req.dir, req.name)
+		path, err := g.exportSnapshot(req.Dir, req.Name)
 		if err != nil {
-			return debugResponse{err: err}
+			return debugResponse{Err: err}
 		}
-		return debugResponse{path: path}
+		return debugResponse{Path: path}
 	case debugRequestState:
-		return debugResponse{state: g.debugState()}
+		return debugResponse{State: g.debugState()}
 	default:
-		return debugResponse{err: fmt.Errorf("unsupported debug request kind: %s", req.kind)}
+		return debugResponse{Err: fmt.Errorf("unsupported debug request kind: %s", req.Kind)}
 	}
 }
 

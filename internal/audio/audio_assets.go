@@ -1,4 +1,4 @@
-package tankbattle
+package audio
 
 import gameassets "tankbattle/assets"
 

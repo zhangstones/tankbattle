@@ -10,7 +10,7 @@
 
 ## 2. 当前代码组织
 
-当前仓库的运行时代码集中在 `internal/tankbattle`，按职责拆文件而不是拆包：
+当前仓库的运行时代码已经拆成“薄编排包 + 独立基础模块”的结构：
 
 - `internal/tankbattle/main.go`
   - 暴露 `Run` 和 `RunWithOptions`，负责 Ebiten 窗口初始化、调试模式开关和顶层依赖装配。
@@ -32,12 +32,16 @@
   - 负责战场、菜单、HUD、历史面板、消息框、暂停框和结算框的具体排版绘制。
 - `internal/tankbattle/render_theme.go`
   - 负责主题色板、面板、描边、辉光、胶囊标签和进度条等通用 UI 原语。
-- `internal/tankbattle/audio_manager.go` + `internal/tankbattle/audio_assets.go`
-  - 负责音效资源、播放节流、开关与音量同步。
+- `internal/audio`
+  - 负责音效资源嵌入、播放节流、混音优先级和音效播放器实现。
+- `internal/storage`
+  - 负责用户配置、历史战绩类型以及本地文件读写和清洗规则。
+- `internal/debugapi`
+  - 负责测试调试控制器、本地 HTTP 接口和请求收发。
 - `internal/tankbattle/settings.go` + `internal/tankbattle/score_history.go`
-  - 负责用户配置和历史战绩的持久化。
+  - 负责把 `storage` 能力接到游戏聚合根，并维护对局内排行榜行为。
 - `internal/tankbattle/debug_api.go`
-  - 负责测试调试控制器、本地 HTTP 接口、主循环内动作执行和快照导出。
+  - 负责把 `debugapi` 请求映射到游戏动作执行、状态导出和快照导出。
 - `internal/tankbattle/runtime_icon.go`
   - 负责 Windows 窗口图标加载。
 
@@ -182,11 +186,11 @@
 
 ## 10. 音频与持久化边界
 
-音频和持久化都通过边界收口，避免污染核心逻辑：
+音频和持久化都通过独立基础模块收口，避免污染核心逻辑：
 
-- 音频通过 `sfxPlayer` 接口注入，`game` 只依赖播放、开关和音量能力。
-- 默认运行时注入真实 `audioManager`，测试或调试模式可以传入 `nil` 或 mock。
-- 用户设置和历史战绩分别由 `settings.go`、`score_history.go` 负责。
+- 音频通过 `internal/audio` 提供具体实现，`game` 侧只依赖 `sfxPlayer` 这层窄接口。
+- 默认运行时注入真实音频管理器，测试或调试模式可以传入 `nil` 或 mock。
+- 用户设置和历史战绩底层由 `internal/storage` 负责，游戏层只保留与聚合根直接相关的包装逻辑。
 - 调试模式下禁止读写用户本地数据，避免测试污染真实环境。
 
 这使得运行时主逻辑不需要关心文件格式、音频设备或测试替身的具体实现。
@@ -195,8 +199,8 @@
 
 调试 API 的目标不是提供外挂控制，而是给功能测试和界面测试提供稳定驱动入口。当前实现采用：
 
-- `RunWithOptions` 中根据环境变量启用本地 HTTP 服务。
-- HTTP handler 不直接改游戏状态，而是把请求投递到 `DebugController.requests`。
+- `RunWithOptions` 中根据环境变量启用 `internal/debugapi` 提供的本地 HTTP 服务。
+- HTTP handler 不直接改游戏状态，而是把请求投递到调试控制器队列。
 - `Update()` 在主循环中消费这些请求，保证动作执行和快照导出仍发生在游戏线程语义内。
 - 快照通过 `Draw + ReadPixels` 导出，不依赖操作系统截图。
 - `scene.*` 动作用于构造命名界面场景，并通过 `debugFreeze` 冻结帧推进，保证 golden 快照稳定。

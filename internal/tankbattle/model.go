@@ -216,10 +216,3 @@ type game struct {
 	debug           *DebugController
 	debugFreeze     bool
 }
-
-type sfxPlayer interface {
-	Play(id sfxID, frame int)
-	SetEnabled(enabled bool)
-	SetSFXVolume(volume float64)
-	Enabled() bool
-}

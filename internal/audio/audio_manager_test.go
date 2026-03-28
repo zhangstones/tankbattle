@@ -1,4 +1,4 @@
-package tankbattle
+package audio
 
 import "testing"
 
@@ -18,12 +18,12 @@ func TestDuckMultiplierWindow(t *testing.T) {
 }
 
 func TestAudioManagerLoadsWaveStateClips(t *testing.T) {
-	a := newAudioManager()
-	prepare, ok := a.clips[sfxWavePrepare]
+	a := NewManager()
+	prepare, ok := a.clips[SFXWavePrepare]
 	if !ok || len(prepare.pcm) == 0 {
 		t.Fatalf("wave prepare clip should be loaded")
 	}
-	start, ok := a.clips[sfxWaveStart]
+	start, ok := a.clips[SFXWaveStart]
 	if !ok || len(start.pcm) == 0 {
 		t.Fatalf("wave start clip should be loaded")
 	}
@@ -33,16 +33,16 @@ func TestAudioManagerLoadsWaveStateClips(t *testing.T) {
 }
 
 func TestAudioManagerLoadsExtendedEventClips(t *testing.T) {
-	a := newAudioManager()
-	ids := []sfxID{
-		sfxMenuBlocked,
-		sfxBuffShieldOff,
-		sfxBuffRapidOff,
-		sfxDestroyEnemy,
-		sfxDestroyPlayer,
-		sfxPowerupPickupShield,
-		sfxPowerupPickupRapid,
-		sfxPowerupPickupRepair,
+	a := NewManager()
+	ids := []SFXID{
+		SFXMenuBlocked,
+		SFXBuffShieldOff,
+		SFXBuffRapidOff,
+		SFXDestroyEnemy,
+		SFXDestroyPlayer,
+		SFXPowerupPickupShield,
+		SFXPowerupPickupRapid,
+		SFXPowerupPickupRepair,
 	}
 	for _, id := range ids {
 		clip, ok := a.clips[id]

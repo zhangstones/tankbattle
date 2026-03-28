@@ -109,7 +109,7 @@ func (c *Client) WaitForState(ctx context.Context, predicate func(DebugState) bo
 }
 
 func GoldenPath(rootDir, rel string) string {
-	return filepath.Join(rootDir, "testdata", "golden", filepath.FromSlash(rel))
+	return filepath.Join(rootDir, "testing", "testdata", "golden", filepath.FromSlash(rel))
 }
 
 func UpdateGoldenEnabled() bool {

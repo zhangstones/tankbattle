@@ -4,7 +4,7 @@ import (
 	"path/filepath"
 	"testing"
 
-	"tankbattle/testkit"
+	"tankbattle/testing/testkit"
 )
 
 func TestDebugUISnapshots(t *testing.T) {

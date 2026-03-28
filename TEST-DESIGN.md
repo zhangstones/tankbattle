@@ -218,23 +218,23 @@
 建议新增如下结构：
 
 ```text
-/testkit
+/testing/testkit
   client.go
   launcher.go
   snapshot.go
   diff.go
 
-/tests/functional
+/testing/functional
   menu_flow_test.go
   state_flow_test.go
   pause_history_test.go
 
-/tests/ui
+/testing/ui
   menu_snapshot_test.go
   hud_snapshot_test.go
   panel_snapshot_test.go
 
-/testdata/golden
+/testing/testdata/golden
   /menu
   /hud
   /panels
@@ -243,8 +243,8 @@
 说明：
 
 - `testkit` 负责公共能力，不承载具体业务断言
-- `tests/functional` 只看状态，不看图片
-- `tests/ui` 只负责场景构建、快照导出和回归比较
+- `testing/functional` 只看状态，不看图片
+- `testing/ui` 只负责场景构建、快照导出和回归比较
 
 ## 9. testkit 责任划分
 
@@ -322,7 +322,7 @@
 
 建议后续补一个辅助命令：
 
-- `go test ./tests/ui -update`
+- `go test ./testing/ui -update`
 
 作用：
 

@@ -31,7 +31,7 @@ func AssertMatchesGolden(t testing.TB, repoRoot, actualPath, goldenRel string) {
 		return
 	}
 
-	failureDir := filepath.Join(repoRoot, "testdata", "failures")
+	failureDir := filepath.Join(repoRoot, ".tmp", "testing", "failures")
 	if err := os.MkdirAll(failureDir, 0o755); err != nil {
 		t.Fatalf("create failure dir: %v", err)
 	}

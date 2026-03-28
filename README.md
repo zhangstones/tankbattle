@@ -81,7 +81,7 @@ go test ./...
 
 ```powershell
 $env:TANKBATTLE_E2E = "1"
-go test ./tests/functional ./tests/ui
+go test ./testing/functional ./testing/ui
 ```
 
 如需更新界面 golden 快照：
@@ -89,10 +89,10 @@ go test ./tests/functional ./tests/ui
 ```powershell
 $env:TANKBATTLE_E2E = "1"
 $env:TANKBATTLE_UPDATE_GOLDEN = "1"
-go test ./tests/ui
+go test ./testing/ui
 ```
 
-测试临时产物会写入 `.tmp_test_artifacts/`，快照对比失败时会输出到 `testdata/failures/`。
+测试代码、golden 基线和辅助工具统一收口到 `testing/`；运行期临时产物和失败 diff 会写入 `.tmp/testing/`。
 
 ## 调试 API / 功能测试
 

@@ -48,7 +48,7 @@ func StartSession(t testing.TB, opts LaunchOptions) *Session {
 	if err != nil {
 		t.Fatalf("find repo root: %v", err)
 	}
-	artifactsDir := filepath.Join(rootDir, ".tmp_test_artifacts")
+	artifactsDir := filepath.Join(rootDir, ".tmp", "testing")
 	if err := os.MkdirAll(artifactsDir, 0o755); err != nil {
 		t.Fatalf("create artifacts dir: %v", err)
 	}
@@ -183,7 +183,7 @@ func ensureBuiltBinary(rootDir string) (string, error) {
 		return existing, nil
 	}
 	builtBinaryOnce.Do(func() {
-		binDir := filepath.Join(rootDir, ".tmp_test_artifacts", "bin")
+		binDir := filepath.Join(rootDir, ".tmp", "testing", "bin")
 		if err := os.MkdirAll(binDir, 0o755); err != nil {
 			builtBinaryErr = err
 			return

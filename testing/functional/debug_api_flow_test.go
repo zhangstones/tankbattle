@@ -3,7 +3,7 @@ package functional_test
 import (
 	"testing"
 
-	"tankbattle/testkit"
+	"tankbattle/testing/testkit"
 )
 
 func TestDebugAPIMenuConfigurationFlow(t *testing.T) {

@@ -1,5 +1,4 @@
 ﻿
 tankbattle_gui.exe
 settings.json
-.tmp_test_artifacts/
-testdata/failures/
+.tmp/
